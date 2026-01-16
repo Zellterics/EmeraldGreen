@@ -1,0 +1,3 @@
+[submodule "ThING-Engine"]
+	path = ThING-Engine
+	url = https://github.com/Zellterics/ThING-Engine.git
