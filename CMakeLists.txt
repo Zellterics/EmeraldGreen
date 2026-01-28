@@ -6,5 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(ThING-Engine)
 
-add_executable(test main.cpp)
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
+    graph/*.cpp
+)
+
+add_executable(test 
+    main.cpp
+    ${SOURCES}
+)
 target_link_libraries(test PRIVATE ThING)
