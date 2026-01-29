@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
-#include "../consts.h"
+#include "../auxiliar/style.h"
 
 Graph::Graph(ThING::API& api) : api(api){
 

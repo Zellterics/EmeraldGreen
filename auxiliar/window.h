@@ -1,5 +1,8 @@
-#include "glm/ext/vector_float2.hpp"
-#include "imgui.h"
+#pragma once
+#include "ThING/api.h"
+#include "ThING/types/apiTypes.h"
+#include "glm/fwd.hpp"
+
 struct WindowSize{
     int width;
     int height;
@@ -23,10 +26,6 @@ struct WindowData{
     glm::vec2 offset;
 };
 
-glm::vec2 mousePosition(WindowData windowData){
-    ImVec2 tempPosition = ImGui::GetMousePos();
-    return {
-        ((tempPosition.x - ((float)windowData.size.width / 2)) / windowData.zoom) + windowData.offset.x,
-        ((tempPosition.y - ((float)windowData.size.height / 2)) / windowData.zoom) + windowData.offset.y
-    };
-}
+glm::vec2 mousePosition(WindowData windowData);
+
+Entity hitEntity(ThING::API& api, WindowData windowData);

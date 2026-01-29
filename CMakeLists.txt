@@ -15,9 +15,11 @@ add_subdirectory(ThING-Engine)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     graph/*.cpp
+    auxiliar/*.cpp
 )
 
 add_executable(test 
+    globals.cpp
     main.cpp
     ${SOURCES}
 )

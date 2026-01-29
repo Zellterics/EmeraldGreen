@@ -1,0 +1,73 @@
+#pragma once
+
+#include "glm/ext/vector_float4.hpp"
+#include "imgui.h"
+
+namespace Color {
+    // constexpr glm::vec4 Background = {0.05f, 0.05f, 0.07f, 1.0f};
+    // constexpr glm::vec4 Node = {0.25f, 0.65f, 0.95f, 1.0f};
+    // constexpr glm::vec4 Outline = {0.10f, 0.10f, 0.12f, 1.0f};
+    // constexpr glm::vec4 Line = {0.60f, 0.60f, 0.65f, 1.0f};
+
+    // constexpr glm::vec4 Background = {0.08f, 0.10f, 0.09f, 1.0f};
+    // constexpr glm::vec4 Node = {0.30f, 0.70f, 0.45f, 1.0f};
+    // constexpr glm::vec4 Outline = {0.15f, 0.20f, 0.15f, 1.0f};
+    // constexpr glm::vec4 Line = {0.60f, 0.75f, 0.60f, 1.0f};
+
+    constexpr glm::vec4 Background = {0.03f, 0.06f, 0.05f, 1.0f};
+    constexpr glm::vec4 Node = {0.85f, 0.95f, 0.90f, 1.0f};
+    constexpr glm::vec4 Outline = {0.05f, 0.20f, 0.15f, 1.0f};
+    constexpr glm::vec4 Line = {0.00f, 0.80f, 0.55f, 1.0f};
+
+    constexpr int OutlineWidth = 1;
+    constexpr int NodeSize = 15;
+    constexpr int LineWidth = 10;
+}
+
+static void ApplyNodeEditorStyle()
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    style.WindowRounding = 12.0f;
+    style.FrameRounding = 8.0f;
+    style.PopupRounding = 10.0f;
+    style.ScrollbarRounding = 10.0f;
+    style.GrabRounding = 8.0f;
+
+    style.WindowPadding = ImVec2(16, 14);
+    style.FramePadding = ImVec2(10, 6);
+    style.ItemSpacing = ImVec2(10, 10);
+
+    style.WindowBorderSize = 1.0f;
+    style.FrameBorderSize = 0.0f;
+
+    ImVec4* c = style.Colors;
+
+    c[ImGuiCol_WindowBg] = ImVec4(0.04f, 0.04f, 0.04f, 0.97f);
+    c[ImGuiCol_ChildBg] = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
+    c[ImGuiCol_PopupBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.98f);
+
+    c[ImGuiCol_Border] = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
+
+    c[ImGuiCol_FrameBg] = ImVec4(0.09f, 0.09f, 0.09f, 1.00f);
+    c[ImGuiCol_FrameBgHovered] = ImVec4(0.12f, 0.12f, 0.12f, 1.00f);
+    c[ImGuiCol_FrameBgActive] = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+
+    c[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
+    c[ImGuiCol_TextDisabled]= ImVec4(0.55f, 0.55f, 0.55f, 1.00f);
+
+    c[ImGuiCol_Button] = ImVec4(0.30f, 0.60f, 1.00f, 0.85f);
+    c[ImGuiCol_ButtonHovered] = ImVec4(0.35f, 0.65f, 1.00f, 1.00f);
+    c[ImGuiCol_ButtonActive] = ImVec4(0.25f, 0.55f, 0.95f, 1.00f);
+
+    c[ImGuiCol_Header] = ImVec4(0.30f, 0.60f, 1.00f, 0.35f);
+    c[ImGuiCol_HeaderHovered] = ImVec4(0.30f, 0.60f, 1.00f, 0.55f);
+    c[ImGuiCol_HeaderActive] = ImVec4(0.30f, 0.60f, 1.00f, 0.75f);
+
+    c[ImGuiCol_CheckMark] = ImVec4(0.30f, 0.60f, 1.00f, 1.00f);
+    c[ImGuiCol_SliderGrab] = ImVec4(0.30f, 0.60f, 1.00f, 1.00f);
+    c[ImGuiCol_SliderGrabActive] = ImVec4(0.40f, 0.70f, 1.00f, 1.00f);
+
+    c[ImGuiCol_TitleBg] = ImVec4(0.03f, 0.03f, 0.03f, 1.00f);
+    c[ImGuiCol_TitleBgActive] = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
+}
