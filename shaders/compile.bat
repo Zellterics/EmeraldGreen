@@ -1,0 +1,31 @@
+@echo off
+setlocal
+
+set GLSLC=glslc
+set SHADERS_DIR=.
+
+:: ===== BASIC =====
+set VERT=%SHADERS_DIR%\basic.vert
+set FRAG=%SHADERS_DIR%\basic.frag
+set VERT_OUT=%SHADERS_DIR%\basicVert.spv
+set FRAG_OUT=%SHADERS_DIR%\basicFrag.spv
+
+echo Compilando vertex shader...
+%GLSLC% "%VERT%" -o "%VERT_OUT%"
+if errorlevel 1 goto :error
+
+echo Compilando fragment shader...
+%GLSLC% "%FRAG%" -o "%FRAG_OUT%"
+if errorlevel 1 goto :error
+
+echo.
+echo ✅ Compilación exitosa.
+goto :end
+
+:error
+echo.
+echo ❌ Error durante la compilación.
+
+:end
+pause
+endlocal
