@@ -6,10 +6,15 @@
 #include "glm/fwd.hpp"
 #include "globals.h"
 #include <ThING/api.h>
+#include <cfloat>
+#include <cstdint>
 #include <imgui.h>
+#include <span>
+#include <string>
 
 #include "auxiliar/style.h"
 #include "graph/graph.h"
+#include "graph/node.h"
 
 void updateCallback(ThING::API& api, FPSCounter& fps){
     static Graph& graph = *editorState.graph; 
@@ -19,6 +24,14 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
     api.getWindowSize(&editorState.windowData.size.width, &editorState.windowData.size.height);
 
     if(first){
+        #include "external/Monocraft.h"
+        #include "external/Monocraft-Bold.h"
+        ImGuiIO& io = ImGui::GetIO();
+        ImFontConfig cfg;
+        cfg.FontDataOwnedByAtlas = false;
+        editorState.MonoFontSize = 18.f;
+        editorState.MonoFont = io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t*>(Monocraft), MonocraftSize, 18.f, &cfg);
+        editorState.MonoFontBold = io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t*>(Monocraft_Bold), Monocraft_BoldSize, 18.f, &cfg);
         ApplyNodeEditorStyle();
         first = false;
     }
@@ -39,12 +52,14 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
                 break;
             case StateM::WaitLeftIdle:
                 if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
+                    static int i = 0;
                     if(editorState.holdEntity != INVALID_ENTITY){
                         editorState.stateM = StateM::DraggingLine;
                         break;
                     }
                     if(hitEntity(api, editorState.windowData, Style::NodeSize + Style::OutlineWidth) == INVALID_ENTITY){
                         Entity e = graph.addNode(mousePosition(editorState.windowData));
+                        graph.last().value = i++;
                     }
                     editorState.stateM = StateM::Idle;
                     break;
@@ -118,15 +133,31 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
 
 void uiCallback(ThING::API& api, FPSCounter& fps){
     static Graph& graph = *editorState.graph;
+    std::span<InstanceData> circleInstances = api.getInstanceVector(InstanceType::Circle);
+    std::span<Node> nodes = graph.viewNodeList();
+    for(Node& node : nodes){
+        if(!api.exists(node.viewEntity()))
+            continue;
+        ImDrawList* draw = ImGui::GetForegroundDrawList();
+        ImVec2 position = {0,0};
+        std::string text = std::to_string(node.value);
+        float fontSize = 18.0f * editorState.windowData.zoom;
+        ImVec2 textSize = editorState.MonoFontBold->CalcTextSizeA(fontSize, FLT_MAX, 0.f, text.c_str());
+        position = worldToImGui<ImVec2>(api.getInstance(node.viewEntity()).position, editorState.windowData);
+        position.x -= textSize.x * .5f;
+        position.y -= textSize.y * .5f;
+        draw->AddText(editorState.MonoFontBold, fontSize, position, IM_COL32_BLACK, text.c_str());
+    }
     ImGui::SetNextWindowPos({0,0}, ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(260, 80), ImGuiCond_Once);
     ImGui::Begin("debug");
     ImGui::PushID(-1);
     ImGui::Text("Current State: %s", StateMToString(editorState.stateM));
-    ImGui::Text("Current State: %i", editorState.holdEntity.index);
+    ImGui::Text("Current Entity: %i", editorState.holdEntity.index);
+    ImGui::Text("Current Zoom: %f", editorState.windowData.zoom);
     ImGui::PopID();
     ImGui::End();
-    std::span<InstanceData> circleInstances = api.getInstanceVector(InstanceType::Circle);
+    
     for(auto& [e, open] : editorState.openedWindows){
         if(editorState.openedWindows.contains(e) && editorState.openedWindows[e]){
             ImGui::SetNextWindowPos(ImGui::GetMousePos(), ImGuiCond_Appearing);
@@ -158,7 +189,7 @@ void uiCallback(ThING::API& api, FPSCounter& fps){
 }
 
 int main(){
-    ThING::API api;
+    ThING::API api(ApiFlags_UpdateCallbackFirst);
     editorState.graph = new Graph(api);
     api.setBackgroundColor(Style::Color::Background);
     api.setUpdateCallback(updateCallback);

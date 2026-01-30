@@ -4,6 +4,7 @@
 #include "ThING/types/apiTypes.h"
 #include "glm/fwd.hpp"
 #include "node.h"
+#include <span>
 
 class Graph{
 public:
@@ -12,8 +13,11 @@ public:
     void deleteNode(Entity e);
     void connect(Entity from, Entity to);
     void update();
-    Entity first(){return nodes[0].viewEntity();}
+    Node& last(){return nodes.empty() ? nullNode : nodes.back();}
+    Node& getNode(int i) {return i < nodes.size() ? nodes[i] : nullNode;};
+    std::span<Node> viewNodeList() {return nodes;}
 private:
+    Node nullNode;
     std::vector<Node> nodes;
     ThING::API& api;
 };

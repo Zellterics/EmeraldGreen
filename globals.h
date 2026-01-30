@@ -1,6 +1,7 @@
 #pragma once
 #include "graph/graph.h"
 #include "auxiliar/window.h"
+#include "imgui.h"
 
 
 enum class StateM{
@@ -33,6 +34,10 @@ struct EditorState{
     Graph* graph = nullptr;
 
     WindowData windowData = {{100, 100},  1, {0, 0}};
+
+    ImFont* MonoFont = nullptr;
+    ImFont* MonoFontBold = nullptr;
+    float MonoFontSize = 18.f;
 };
 
 extern EditorState editorState;

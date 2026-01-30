@@ -11,6 +11,7 @@ public:
     Node(Entity circle){this->circle = circle;}
     void connect(Entity other, Entity line){links.emplace_back(other, line);}
     Entity viewEntity() const {return circle;}
+    int value;
 private:
     Entity circle;
 };

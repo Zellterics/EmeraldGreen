@@ -30,3 +30,11 @@ glm::vec2 mousePosition(WindowData windowData);
 
 Entity hitEntity(ThING::API& api, WindowData windowData);
 Entity hitEntity(ThING::API& api, WindowData windowData, float margin);
+
+template<typename T>
+inline T worldToImGui(glm::vec2 pos, WindowData& windowData){
+    return {
+        (pos.x - windowData.offset.x) * windowData.zoom + windowData.size.width  * 0.5f,
+        (pos.y - windowData.offset.y) * windowData.zoom + windowData.size.height * 0.5f
+    };
+}

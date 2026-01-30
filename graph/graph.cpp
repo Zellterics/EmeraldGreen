@@ -10,8 +10,8 @@
 #include <span>
 #include "../auxiliar/style.h"
 
-Graph::Graph(ThING::API& api) : api(api){
-
+Graph::Graph(ThING::API& api) : api(api), nullNode(INVALID_ENTITY){
+    
 }
 
 Entity Graph::addNode(glm::vec2 pos){
