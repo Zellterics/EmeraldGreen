@@ -74,6 +74,7 @@ void main() {
             normal * inPos.y * halfWidth * width;
 
         gl_Position = ubo.projection * vec4(pos, 0.0, 1.0);
+        vLocalPos = vec2(t, inPos.y);
         return;
     }
 

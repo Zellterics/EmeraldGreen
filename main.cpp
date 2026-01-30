@@ -2,6 +2,7 @@
 #include "ThING/types/apiTypes.h"
 #include "ThING/types/enums.h"
 #include "ThING/types/renderData.h"
+#include "auxiliar/window.h"
 #include "glm/fwd.hpp"
 #include "globals.h"
 #include <ThING/api.h>
@@ -10,7 +11,7 @@
 #include "auxiliar/style.h"
 #include "graph/graph.h"
 
-void updateCallback(ThING::API& api, FPSCounter fps){
+void updateCallback(ThING::API& api, FPSCounter& fps){
     static Graph& graph = *editorState.graph; 
     static bool first = true;
 
@@ -21,74 +22,110 @@ void updateCallback(ThING::API& api, FPSCounter fps){
         ApplyNodeEditorStyle();
         first = false;
     }
-
     ImGuiIO& io = ImGui::GetIO();
-    if (!io.WantCaptureMouse){
-        if(ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !(editorState.rightHold || editorState.rightDrag)){
-            editorState.holdEntity = hitEntity(api, editorState.windowData);
-            editorState.leftHold = true;
-        }
-        if(ImGui::IsMouseDragging(ImGuiMouseButton_Left) && editorState.leftHold){
-            if(editorState.holdEntity == INVALID_ENTITY){
-                
-                ImVec2 delta = ImGui::GetIO().MouseDelta;
-                editorState.windowData.offset.x -= delta.x / editorState.windowData.zoom;
-                editorState.windowData.offset.y -= delta.y / editorState.windowData.zoom;
-                api.setOffset(editorState.windowData.offset);
-            } else {
+
+    if(!io.WantCaptureMouse){
+        switch (editorState.stateM) {
+            case StateM::Idle:
+                editorState.holdEntity = INVALID_ENTITY;
+                if(ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
+                    editorState.holdEntity = hitEntity(api, editorState.windowData);
+                    editorState.stateM = StateM::WaitLeftIdle;
+                }
+                if(ImGui::IsMouseClicked(ImGuiMouseButton_Right)){
+                    editorState.holdEntity = hitEntity(api, editorState.windowData);
+                    editorState.stateM = StateM::WaitRightIdle;
+                }
+                break;
+            case StateM::WaitLeftIdle:
+                if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
+                    if(editorState.holdEntity != INVALID_ENTITY){
+                        editorState.stateM = StateM::DraggingLine;
+                        break;
+                    }
+                    if(hitEntity(api, editorState.windowData, Style::NodeSize + Style::OutlineWidth) == INVALID_ENTITY){
+                        Entity e = graph.addNode(mousePosition(editorState.windowData));
+                    }
+                    editorState.stateM = StateM::Idle;
+                    break;
+                }
+                if(ImGui::IsMouseDragging(ImGuiMouseButton_Left, Style::LockDragging)){
+                    if(editorState.holdEntity == INVALID_ENTITY){
+                        editorState.stateM = StateM::PanningCamera;
+                        break;
+                    }
+                    editorState.stateM = StateM::DraggingLine;
+                }
+                break;
+            case StateM::WaitRightIdle:
+                if(ImGui::IsMouseReleased(ImGuiMouseButton_Right)){
+                    if(editorState.holdEntity != INVALID_ENTITY){
+                        editorState.openedWindows[editorState.holdEntity] = true;
+                    }
+                    editorState.stateM = StateM::Idle;
+                    break;
+                }
+                if(ImGui::IsMouseDragging(ImGuiMouseButton_Right)){
+                    editorState.stateM = StateM::DraggingNode;
+                }
+                break;
+            case StateM::DraggingLine:
+                if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
+                    if(tempLine != INVALID_ENTITY){
+                        api.deleteInstance(tempLine);
+                        tempLine = INVALID_ENTITY;
+                    }
+                    if(api.exists(editorState.holdEntity)){
+                        graph.connect(editorState.holdEntity, hitEntity(api, editorState.windowData));
+                    }
+                    editorState.stateM = StateM::Idle;
+                    break;
+                }
                 if(tempLine == INVALID_ENTITY){
-                    tempLine = api.addLine(api.getInstance(editorState.holdEntity).position, mousePosition(editorState.windowData), Color::LineWidth);
-                    api.getLine(tempLine).color = Color::Line;
-                    api.getLine(tempLine).outlineColor = Color::Outline;
-                    api.getLine(tempLine).outlineSize = Color::OutlineWidth;
+                    tempLine = api.addLine(api.getInstance(editorState.holdEntity).position, 
+                        mousePosition(editorState.windowData), Style::LineWidth);
+                    api.getLine(tempLine).color = Style::Color::TempLine;
+                    api.getLine(tempLine).outlineColor = Style::Color::Outline;
+                    api.getLine(tempLine).outlineSize = Style::OutlineWidth;
                     api.getLine(tempLine).objectID = 1;
                 } else {
                     api.getLine(tempLine).point2 = mousePosition(editorState.windowData);
                 }
-            }
-            editorState.leftDrag = true;
-        }
-        if(ImGui::IsMouseReleased(ImGuiMouseButton_Left) && editorState.leftHold){
-            if(editorState.leftDrag){
-                if(api.exists(editorState.holdEntity)){
-                    graph.connect(editorState.holdEntity, hitEntity(api, editorState.windowData));
+                api.updateOutlines();
+                break;
+            case StateM::DraggingNode:
+                if(ImGui::IsMouseReleased(ImGuiMouseButton_Right)){
+                    editorState.stateM = StateM::Idle;
                 }
-            } else {
-                Entity e = graph.addNode(mousePosition(editorState.windowData));
-            }
-            if(tempLine != INVALID_ENTITY){
-                api.deleteInstance(tempLine);
-                tempLine = INVALID_ENTITY;
-            }
-            editorState.leftDrag = false;
-            editorState.leftHold = false;
-        }
-        if(!(editorState.leftDrag || editorState.leftHold)){
-            if(ImGui::IsMouseClicked(ImGuiMouseButton_Right)){
-                editorState.holdEntity = hitEntity(api, editorState.windowData);
-                editorState.rightHold = true;
-            }
-        }
-        if(ImGui::IsMouseDragging(ImGuiMouseButton_Right) && editorState.rightHold){
-            if(editorState.holdEntity != INVALID_ENTITY){
-                api.getInstance(editorState.holdEntity).position = mousePosition(editorState.windowData);
-                graph.update();
-            }
-            editorState.rightDrag = true;
-        }
-        if(ImGui::IsMouseReleased(ImGuiMouseButton_Right) && editorState.rightHold){
-            
-            if(!editorState.rightDrag && editorState.holdEntity != INVALID_ENTITY){
-                editorState.openedWindows[editorState.holdEntity] = true;
-            }
-            editorState.rightHold = false;
-            editorState.rightDrag = false;
+                if(editorState.holdEntity != INVALID_ENTITY){
+                    api.getInstance(editorState.holdEntity).position = mousePosition(editorState.windowData);
+                    graph.update();
+                }
+                break;
+            case StateM::PanningCamera:
+                if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
+                    editorState.stateM = StateM::Idle;
+                    break;
+                }
+                ImVec2 delta = ImGui::GetIO().MouseDelta;
+                editorState.windowData.offset.x -= delta.x / editorState.windowData.zoom;
+                editorState.windowData.offset.y -= delta.y / editorState.windowData.zoom;
+                api.setOffset(editorState.windowData.offset);
+                break;
         }
     }
 }
 
-void uiCallback(ThING::API& api, FPSCounter fps){
-    static Graph& graph = *editorState.graph; 
+void uiCallback(ThING::API& api, FPSCounter& fps){
+    static Graph& graph = *editorState.graph;
+    ImGui::SetNextWindowPos({0,0}, ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(260, 80), ImGuiCond_Once);
+    ImGui::Begin("debug");
+    ImGui::PushID(-1);
+    ImGui::Text("Current State: %s", StateMToString(editorState.stateM));
+    ImGui::Text("Current State: %i", editorState.holdEntity.index);
+    ImGui::PopID();
+    ImGui::End();
     std::span<InstanceData> circleInstances = api.getInstanceVector(InstanceType::Circle);
     for(auto& [e, open] : editorState.openedWindows){
         if(editorState.openedWindows.contains(e) && editorState.openedWindows[e]){
@@ -123,7 +160,7 @@ void uiCallback(ThING::API& api, FPSCounter fps){
 int main(){
     ThING::API api;
     editorState.graph = new Graph(api);
-    api.setBackgroundColor(Color::Background);
+    api.setBackgroundColor(Style::Color::Background);
     api.setUpdateCallback(updateCallback);
     api.setUICallback(uiCallback);
     api.run();

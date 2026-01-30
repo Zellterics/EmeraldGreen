@@ -29,3 +29,4 @@ struct WindowData{
 glm::vec2 mousePosition(WindowData windowData);
 
 Entity hitEntity(ThING::API& api, WindowData windowData);
+Entity hitEntity(ThING::API& api, WindowData windowData, float margin);

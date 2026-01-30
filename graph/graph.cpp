@@ -16,9 +16,9 @@ Graph::Graph(ThING::API& api) : api(api){
 
 Entity Graph::addNode(glm::vec2 pos){
     Entity e;
-    e = api.addCircle(pos, Color::NodeSize, Color::Node);
-    api.getInstance(e).outlineSize = Color::OutlineWidth;
-    api.getInstance(e).outlineColor = Color::Outline;
+    e = api.addCircle(pos, Style::NodeSize, Style::Color::Node);
+    api.getInstance(e).outlineSize = Style::OutlineWidth;
+    api.getInstance(e).outlineColor = Style::Color::Outline;
     api.getInstance(e).objectID = 1;
     api.getInstance(e).drawIndex = 20;
     api.updateOutlines();
@@ -47,11 +47,11 @@ void Graph::connect(Entity from, Entity to){
                 return;
             }
         }
-        Entity line = api.addLine(api.getInstance(from).position, api.getInstance(to).position, Color::LineWidth);
+        Entity line = api.addLine(api.getInstance(from).position, api.getInstance(to).position, Style::LineWidth);
         nodes[from.index].connect(to, line);
-        api.getLine(line).color = Color::Line;
-        api.getLine(line).outlineColor = Color::Outline;
-        api.getLine(line).outlineSize = Color::OutlineWidth;
+        api.getLine(line).color = Style::Color::Line;
+        api.getLine(line).outlineColor = Style::Color::Outline;
+        api.getLine(line).outlineSize = Style::OutlineWidth;
         api.getLine(line).objectID = 1;
     }
     
@@ -69,10 +69,10 @@ void Graph::update(){
         }
         
         for(Link& link : node.links){
-            Entity e = api.addLine(api.getInstance(node.viewEntity()).position, api.getInstance(link.viewConnection()).position, Color::LineWidth);
-            api.getLine(e).color = Color::Line;
-            api.getLine(e).outlineColor = Color::Outline;
-            api.getLine(e).outlineSize = Color::OutlineWidth;
+            Entity e = api.addLine(api.getInstance(node.viewEntity()).position, api.getInstance(link.viewConnection()).position, Style::LineWidth);
+            api.getLine(e).color = Style::Color::Line;
+            api.getLine(e).outlineColor = Style::Color::Outline;
+            api.getLine(e).outlineSize = Style::OutlineWidth;
             api.getLine(e).objectID = 1;
         }
     }
