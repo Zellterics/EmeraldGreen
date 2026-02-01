@@ -6,15 +6,19 @@
 #include "glm/fwd.hpp"
 #include "globals.h"
 #include <ThING/api.h>
-#include <cfloat>
 #include <cstdint>
 #include <imgui.h>
 #include <span>
 #include <string>
+#include <unordered_map>
+#include <utility>
 
 #include "auxiliar/style.h"
 #include "graph/graph.h"
 #include "graph/node.h"
+
+#include "external/Monocraft.h"
+#include "external/Monocraft-Bold.h"
 
 void updateCallback(ThING::API& api, FPSCounter& fps){
     static Graph& graph = *editorState.graph; 
@@ -24,8 +28,6 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
     api.getWindowSize(&editorState.windowData.size.width, &editorState.windowData.size.height);
 
     if(first){
-        #include "external/Monocraft.h"
-        #include "external/Monocraft-Bold.h"
         ImGuiIO& io = ImGui::GetIO();
         ImFontConfig cfg;
         cfg.FontDataOwnedByAtlas = false;
@@ -36,6 +38,75 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
         first = false;
     }
     ImGuiIO& io = ImGui::GetIO();
+    static Node* tempNode = nullptr;
+    static std::unordered_map<Node*, int> visited;
+    std::span<Node> nodes = graph.viewNodeList();
+
+    for(Node& node : nodes){
+        glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;
+        for(Link& link : node.links){
+            glm::vec2& pos1 = api.getLine(link.viewLine()).point1;
+            glm::vec2& pos2 = api.getLine(link.viewLine()).point2;
+            float distance = length(pos2 - pos1);
+            glm::vec2 direction = normalize(pos2 - pos1);
+            glm::vec2 force = direction * (distance - 90.f) * 0.04f;
+            nodePosition += force;
+            api.getInstance(link.viewConnection()).position -= force;
+        }
+    }
+    
+    std::unordered_map<int64_t, std::vector<Entity>> hashGrid;
+    hashGrid.reserve(nodes.size());
+    float size = Style::NodeSize * 10;
+    for(Node& node : nodes){
+        glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;
+        hashGrid[(int64_t(floor(nodePosition.x / size)) << 32) | (uint32_t(floor(nodePosition.y / size)))].push_back(node.viewEntity());
+    }
+    for(Node& node : nodes){
+        glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;
+        int64_t nodeKey = (int64_t(floor(nodePosition.x / size)) << 32) | (uint32_t(floor(nodePosition.y / size)));
+        int xKey = int(floor(nodePosition.x / size));
+        int yKey = int(floor(nodePosition.y / size));
+
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int nx = xKey + i;
+                int ny = yKey + j;
+
+                int64_t key = (int64_t(nx) << 32) | (uint32_t(ny));
+
+                auto it = hashGrid.find(key);
+                if (it == hashGrid.end())
+                    continue;
+
+                for (Entity& other : it->second) {
+                    if (other == node.viewEntity())
+                        continue;
+                    glm::vec2 otherPos = api.getInstance(other).position;
+                    glm::vec2 delta = nodePosition - otherPos;
+                    float dist2 = dot(delta, delta);
+
+                    float minDist = size;
+                    float minDist2 = minDist * minDist;
+
+                    if (dist2 > 0.0001f && dist2 < minDist2) {
+
+                        float dist = sqrt(dist2);
+                        glm::vec2 dir = delta / dist;
+
+                        float t = (minDist - dist) / minDist;
+                        t = std::clamp(t, 0.f, 1.f);
+
+                        nodePosition += dir * t * 4.5f;
+                    }
+                }
+            }
+        }
+    }
+    for(Node& node : nodes){
+        api.getInstance(node.viewEntity()).position *= .99f;
+    }
+    graph.update();
 
     if(!io.WantCaptureMouse){
         switch (editorState.stateM) {
@@ -49,6 +120,17 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
                     editorState.holdEntity = hitEntity(api, editorState.windowData);
                     editorState.stateM = StateM::WaitRightIdle;
                 }
+                if(ImGui::IsMouseClicked(ImGuiMouseButton_Middle)){
+                    for(Node& node : graph.viewNodeList()){
+                        if(api.exists(node.viewEntity())){
+                            editorState.stateM = StateM::PlayingAnimation;
+                            tempNode = &node;
+                            visited.clear();
+                            visited[tempNode] = 0;
+                            break;
+                        }
+                    }
+                }
                 break;
             case StateM::WaitLeftIdle:
                 if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
@@ -59,7 +141,7 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
                     }
                     if(hitEntity(api, editorState.windowData, Style::NodeSize + Style::OutlineWidth) == INVALID_ENTITY){
                         Entity e = graph.addNode(mousePosition(editorState.windowData));
-                        graph.last().value = i++;
+                        graph.getNode(e.index).value = i++;
                     }
                     editorState.stateM = StateM::Idle;
                     break;
@@ -104,6 +186,7 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
                     api.getLine(tempLine).outlineSize = Style::OutlineWidth;
                     api.getLine(tempLine).objectID = 1;
                 } else {
+                    api.getLine(tempLine).point1 = api.getInstance(editorState.holdEntity).position;
                     api.getLine(tempLine).point2 = mousePosition(editorState.windowData);
                 }
                 api.updateOutlines();
@@ -122,11 +205,64 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
                     editorState.stateM = StateM::Idle;
                     break;
                 }
-                ImVec2 delta = ImGui::GetIO().MouseDelta;
-                editorState.windowData.offset.x -= delta.x / editorState.windowData.zoom;
-                editorState.windowData.offset.y -= delta.y / editorState.windowData.zoom;
-                api.setOffset(editorState.windowData.offset);
+                {
+                    ImVec2 delta = ImGui::GetIO().MouseDelta;
+                    editorState.windowData.offset.x -= delta.x / editorState.windowData.zoom;
+                    editorState.windowData.offset.y -= delta.y / editorState.windowData.zoom;
+                    api.setOffset(editorState.windowData.offset);
+                }
                 break;
+            case StateM::PlayingAnimation:
+                if(ImGui::IsMouseClicked(ImGuiMouseButton_Right)){
+                    for(LineData& line : api.getLineVector()){
+                        if (!line.alive){
+                            continue;
+                        }
+                        line.color = Style::Color::Line;
+                        line.outlineColor = Style::Color::Outline;
+                        line.objectID = 1;
+                        api.updateOutlines();
+                    }
+                    editorState.stateM = StateM::WaitRightIdle;
+                }
+                if(ImGui::GetFrameCount() % 10){
+                    return;
+                }
+                if(!visited.contains(tempNode)){
+                    visited[tempNode] = 0;
+                }
+                if(visited[tempNode] < tempNode->links.size()){
+                    Entity lineE = tempNode->links[visited[tempNode]].viewLine();
+                    api.getLine(lineE).color *= .8f;
+                    api.getLine(lineE).color.a = 1;
+                    api.getLine(lineE).objectID = 2;
+                    api.updateOutlines();
+                    Entity e = tempNode->links[visited[tempNode]].viewConnection();
+                    visited[tempNode]++;
+                    tempNode = &graph.getNode(e.index);
+                } else if (tempNode->links.size() == 0){
+                    for(LineData& line : api.getLineVector()){
+                        if (!line.alive){
+                            continue;
+                        }
+                        line.color = Style::Color::Line;
+                        line.outlineColor = Style::Color::Outline;
+                        line.objectID = 1;
+                        api.updateOutlines();
+                    }
+                    editorState.stateM = StateM::Idle;
+                } else {
+                    visited[tempNode] = 0;
+                    Entity lineE = tempNode->links[visited[tempNode]].viewLine();
+                    api.getLine(lineE).color *= .8f;
+                    api.getLine(lineE).color.a = 1;
+                    api.getLine(lineE).objectID = 2;
+                    api.updateOutlines();
+                    Entity e = tempNode->links[visited[tempNode]].viewConnection();
+                    visited[tempNode]++;
+                    tempNode = &graph.getNode(e.index);
+                }
+            break;
         }
     }
 }
@@ -182,9 +318,15 @@ void uiCallback(ThING::API& api, FPSCounter& fps){
         scroll /= 20;
         float oldZoom = editorState.windowData.zoom;
         editorState.windowData.zoom *= 1 + scroll;
-        editorState.windowData.offset += (pos - editorState.windowData.offset) * (1.f - (oldZoom / editorState.windowData.zoom));
-        api.setZoom(editorState.windowData.zoom);
-        api.setOffset(editorState.windowData.offset);
+        if(editorState.windowData.zoom < .05){
+            editorState.windowData.zoom = .05;
+        } else if(editorState.windowData.zoom > 120){
+            editorState.windowData.zoom = 120;
+        } else {
+            editorState.windowData.offset += (pos - editorState.windowData.offset) * (1.f - (oldZoom / editorState.windowData.zoom));
+            api.setZoom(editorState.windowData.zoom);
+            api.setOffset(editorState.windowData.offset);
+        }
     }
 }
 

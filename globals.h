@@ -10,7 +10,8 @@ enum class StateM{
     WaitRightIdle,
     DraggingLine,
     DraggingNode,
-    PanningCamera
+    PanningCamera,
+    PlayingAnimation
 };
 
 inline const char* StateMToString(StateM s){
