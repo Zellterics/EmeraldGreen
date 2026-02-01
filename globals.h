@@ -1,34 +1,13 @@
 #pragma once
+#include "ThING/types/apiTypes.h"
+#include "auxiliar/style.h"
 #include "graph/graph.h"
 #include "auxiliar/window.h"
 #include "imgui.h"
 
-
-enum class StateM{
-    Idle,
-    WaitLeftIdle,
-    WaitRightIdle,
-    DraggingLine,
-    DraggingNode,
-    PanningCamera,
-    PlayingAnimation
-};
-
-inline const char* StateMToString(StateM s){
-    switch(s){
-        case StateM::Idle:             return "Idle";
-        case StateM::WaitLeftIdle:     return "WaitLeftIdle";
-        case StateM::WaitRightIdle:    return "WaitRightIdle";
-        case StateM::DraggingLine:     return "DraggingLine";
-        case StateM::DraggingNode:     return "DraggingNode";
-        case StateM::PanningCamera:    return "PanningCamera";
-        default:                       return "UnknownState";
-    }
-}
-
 struct EditorState{
-    StateM stateM = StateM::Idle;
     Entity holdEntity = INVALID_ENTITY;
+    Entity tempLine = INVALID_ENTITY;
 
     std::unordered_map<Entity, bool> openedWindows = {};
 
@@ -42,3 +21,16 @@ struct EditorState{
 };
 
 extern EditorState editorState;
+
+struct Forces{
+    float centerAttraction = .99f;
+    float nodeRepulsionForce = 4.5f;
+    float nodeRepulsionRadius = Style::NodeSize * 10;
+    float lineForce = .04f;
+    float lineCenter = 90.f;
+};
+
+extern Forces forces;
+
+class StateMachine;
+extern StateMachine stateMachine;

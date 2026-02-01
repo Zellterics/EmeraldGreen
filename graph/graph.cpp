@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstddef>
 #include "../auxiliar/style.h"
+#include "../globals.h"
 
 Graph::Graph(ThING::API& api) : api(api), nullNode(INVALID_ENTITY){
     
@@ -85,5 +86,76 @@ void Graph::update(){
             api.getLine(link.viewLine()).point1 = api.getInstance(node.viewEntity()).position;
             api.getLine(link.viewLine()).point2 = api.getInstance(link.viewConnection()).position;
         }
+    }
+}
+
+void Graph::applyLineForces(Forces forces){
+    for(Node& node : nodes){
+        glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;
+        for(Link& link : node.links){
+            glm::vec2& pos1 = api.getLine(link.viewLine()).point1;
+            glm::vec2& pos2 = api.getLine(link.viewLine()).point2;
+            float distance = length(pos2 - pos1);
+            glm::vec2 direction = normalize(pos2 - pos1);
+            glm::vec2 force = direction * (distance - forces.lineCenter) * forces.lineForce;
+            nodePosition += force;
+            api.getInstance(link.viewConnection()).position -= force;
+        }
+    }
+}
+
+void Graph::applyNodeRepulsion(Forces forces){
+    std::unordered_map<int64_t, std::vector<Entity>> hashGrid;
+    hashGrid.reserve(nodes.size());
+    for(Node& node : nodes){
+        glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;
+        hashGrid[(int64_t(floor(nodePosition.x / forces.nodeRepulsionRadius)) << 32) | (uint32_t(floor(nodePosition.y / forces.nodeRepulsionRadius)))].push_back(node.viewEntity());
+    }
+    for(Node& node : nodes){
+        glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;
+        int64_t nodeKey = (int64_t(floor(nodePosition.x / forces.nodeRepulsionRadius)) << 32) | (uint32_t(floor(nodePosition.y / forces.nodeRepulsionRadius)));
+        int xKey = int(floor(nodePosition.x / forces.nodeRepulsionRadius));
+        int yKey = int(floor(nodePosition.y / forces.nodeRepulsionRadius));
+
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int nx = xKey + i;
+                int ny = yKey + j;
+
+                int64_t key = (int64_t(nx) << 32) | (uint32_t(ny));
+
+                auto it = hashGrid.find(key);
+                if (it == hashGrid.end())
+                    continue;
+
+                for (Entity& other : it->second) {
+                    if (other == node.viewEntity())
+                        continue;
+                    glm::vec2 otherPos = api.getInstance(other).position;
+                    glm::vec2 delta = nodePosition - otherPos;
+                    float dist2 = dot(delta, delta);
+
+                    float minDist = forces.nodeRepulsionRadius;
+                    float minDist2 = minDist * minDist;
+
+                    if (dist2 > 0.0001f && dist2 < minDist2) {
+
+                        float dist = sqrt(dist2);
+                        glm::vec2 dir = delta / dist;
+
+                        float t = (minDist - dist) / minDist;
+                        t = std::clamp(t, 0.f, 1.f);
+
+                        nodePosition += dir * t * forces.nodeRepulsionForce;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Graph::applyCenterAttraction(Forces forces){
+    for(Node& node : nodes){
+        api.getInstance(node.viewEntity()).position *= forces.centerAttraction;
     }
 }

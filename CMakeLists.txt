@@ -16,6 +16,7 @@ add_subdirectory(ThING-Engine)
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     graph/*.cpp
     auxiliar/*.cpp
+    stateMachine/*.cpp
 )
 
 add_executable(test 
