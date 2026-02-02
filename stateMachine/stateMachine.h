@@ -13,6 +13,7 @@ enum class StateM{
     DraggingLine,
     DraggingNode,
     PanningCamera,
+    DraggingRight,
     PlayingAnimation
 };
 
@@ -23,12 +24,16 @@ public:
     std::string stateToString();
     void update();
 private:
+    void selectNode();
+    void deselectNode();
+
     void idle();
     void waitLeftIdle();
     void waitRightIdle();
     void dragginLine();
     void draggingNode();
     void panningCamera();
+    void draggingRight();
     void playingAnimation();
     StateM currentState;
 

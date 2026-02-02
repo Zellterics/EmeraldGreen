@@ -37,6 +37,14 @@ namespace Style {
         const std::string SelectNode = BasePath + "impactMetal_002.wav";
         const std::string ConnectNode = BasePath + "impactGeneric_light_003.wav";
         const std::string DisconnectNode = BasePath + "impactGeneric_light_002.wav";
+        const std::string Check = BasePath + "click_003.wav";
+        const std::string UnCheck = BasePath + "click_002.wav";
+        const std::string OpenTree = BasePath + "click_001.wav";
+        const std::string CloseTree = BasePath + "click_005.wav";
+    }
+
+    namespace UI {
+        constexpr float TextSize = 16.f;
     }
 
     constexpr int OutlineWidth = 1;
@@ -57,7 +65,7 @@ static void ApplyNodeEditorStyle()
     style.GrabRounding = 8.0f;
 
     style.WindowPadding = ImVec2(16, 14);
-    style.FramePadding = ImVec2(10, 6);
+    style.FramePadding = ImVec2(4, 4);
     style.ItemSpacing = ImVec2(10, 10);
 
     style.WindowBorderSize = 1.0f;

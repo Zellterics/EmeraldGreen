@@ -1,4 +1,3 @@
-#include "imgui.h"
 #include "window.h"
 
 glm::vec2 mousePosition(WindowData windowData){
@@ -99,4 +98,40 @@ Entity hitEntity(ThING::API& api, WindowData windowData, float margin){
         return cache;
     }
     return INVALID_ENTITY;
+}
+
+bool openTree(ThING::API& api, std::string id){
+    static std::unordered_map<std::string, bool> wasOpen;
+    if(!wasOpen.contains(id)){
+        wasOpen[id] = ImGui::TreeNode(id.c_str());
+        return wasOpen[id];
+    }
+    bool isOpen = ImGui::TreeNode(id.c_str());
+
+    if (wasOpen[id] && !isOpen) {
+        api.playAudio(Style::Audio::CloseTree);
+    }
+    if(!wasOpen[id] && isOpen){
+        api.playAudio(Style::Audio::OpenTree);
+    }
+    wasOpen[id] = isOpen;
+    return isOpen;
+}
+
+bool beginWindow(ThING::API& api, std::string id){
+    static std::unordered_map<std::string, bool> wasOpen;
+    if(!wasOpen.contains(id)){
+        wasOpen[id] = ImGui::Begin(id.c_str());
+        return wasOpen[id];
+    }
+    bool isOpen = ImGui::Begin(id.c_str());
+
+    if (wasOpen[id] && !isOpen) {
+        api.playAudio(Style::Audio::CloseTree);
+    }
+    if(!wasOpen[id] && isOpen){
+        api.playAudio(Style::Audio::OpenTree);
+    }
+    wasOpen[id] = isOpen;
+    return isOpen;
 }

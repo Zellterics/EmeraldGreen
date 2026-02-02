@@ -9,6 +9,12 @@ struct GameState{
     int points = 0;
 };
 
+struct ConfigState{
+    bool lineForces = true;
+    bool nodeRepulsion = true;
+    bool centerAttraction = true;
+};
+
 struct EditorState{
     Entity holdEntity = INVALID_ENTITY;
     Entity tempLine = INVALID_ENTITY;
@@ -23,13 +29,14 @@ struct EditorState{
     ImFont* MonoFontBold = nullptr;
     float MonoFontSize = 18.f;
 
+    ConfigState config;
     GameState game;
 };
 
 extern EditorState editorState;
 
 struct Forces{
-    float centerAttraction = .99f;
+    float centerAttraction = .01f;
     float nodeRepulsionForce = 4.5f;
     float nodeRepulsionRadius = Style::NodeSize * 10;
     float lineForce = .04f;

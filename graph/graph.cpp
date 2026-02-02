@@ -22,6 +22,7 @@ Entity Graph::addNode(glm::vec2 pos){
     api.updateOutlines();
     if(e.index < nodes.size()){
         nodes[e.index].links.clear();
+        nodes[e.index].data = NodeData{};
         return e;
     }
     nodes.emplace_back(e);
@@ -173,6 +174,6 @@ void Graph::applyCenterAttraction(Forces forces){
         if(node.data.tags.noUpdate){
             continue;
         }
-        api.getInstance(node.viewEntity()).position *= forces.centerAttraction;
+        api.getInstance(node.viewEntity()).position *= 1 - forces.centerAttraction;
     }
 }
