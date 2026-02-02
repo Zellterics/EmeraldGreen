@@ -2,6 +2,7 @@
 
 #include "glm/ext/vector_float4.hpp"
 #include "imgui.h"
+#include <string>
 
 namespace Style {
     namespace Color {
@@ -22,9 +23,25 @@ namespace Style {
         constexpr glm::vec4 Outline = {0.05f, 0.20f, 0.15f, 1.0f};
         constexpr glm::vec4 Line = {0.00f, 0.80f, 0.55f, 1.0f};
         constexpr glm::vec4 TempLine = {0.15f, 0.50f, 0.45f, 1.0f};
+
+        constexpr glm::vec4 NodeSelected = {0.60f, 0.90f, 0.80f, 1.0f};
+
     }
+
+    namespace Audio {
+        const std::string BasePath = "./assets/audio/";
+        const std::string DeleteNode = BasePath + "footstep_snow_003.wav";
+        const std::string ReleaseNode = BasePath + "impactMetal_001.wav";
+        const std::string OpenUi = BasePath + "impactGlass_heavy_003.wav";
+        const std::string CloseUi = BasePath + "impactPlank_medium_003.wav";
+        const std::string SelectNode = BasePath + "impactMetal_002.wav";
+        const std::string ConnectNode = BasePath + "impactGeneric_light_003.wav";
+        const std::string DisconnectNode = BasePath + "impactGeneric_light_002.wav";
+    }
+
     constexpr int OutlineWidth = 1;
     constexpr int NodeSize = 15;
+    constexpr int NodeSelectedPadding = 2;
     constexpr int LineWidth = 10;
     constexpr int LockDragging = 10;
 }

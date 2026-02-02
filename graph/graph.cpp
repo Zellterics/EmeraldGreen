@@ -47,12 +47,12 @@ void Graph::deleteNode(Entity e){
     }
 }
 
-void Graph::connect(Entity from, Entity to){
+bool Graph::connect(Entity from, Entity to){
     if(!(api.exists(from) && api.exists(to))){
-        return;
+        return false;
     }
     if(from == to){
-        return;
+        return false;
     }
     Node& node = nodes[from.index];
     for(size_t i = 0; i < node.links.size(); i++){
@@ -64,7 +64,7 @@ void Graph::connect(Entity from, Entity to){
                 node.links.end()
             );
             update();
-            return;
+            return false;
         }
     }
     Entity line = api.addLine(api.getInstance(from).position, api.getInstance(to).position, Style::LineWidth);
@@ -73,6 +73,7 @@ void Graph::connect(Entity from, Entity to){
     api.getLine(line).outlineColor = Style::Color::Outline;
     api.getLine(line).outlineSize = Style::OutlineWidth;
     api.getLine(line).objectID = 1;
+    return true;
 }
 
 void Graph::update(){
@@ -93,13 +94,20 @@ void Graph::applyLineForces(Forces forces){
     for(Node& node : nodes){
         glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;
         for(Link& link : node.links){
+            if(!api.exists(link.viewLine())){
+                continue;
+            }
             glm::vec2& pos1 = api.getLine(link.viewLine()).point1;
             glm::vec2& pos2 = api.getLine(link.viewLine()).point2;
             float distance = length(pos2 - pos1);
             glm::vec2 direction = normalize(pos2 - pos1);
             glm::vec2 force = direction * (distance - forces.lineCenter) * forces.lineForce;
-            nodePosition += force;
-            api.getInstance(link.viewConnection()).position -= force;
+            if(!node.data.tags.noUpdate){
+                nodePosition += force;
+            }
+            if(!editorState.graph->getNode(link.viewConnection().index).data.tags.noUpdate){
+                api.getInstance(link.viewConnection()).position -= force;
+            }
         }
     }
 }
@@ -112,6 +120,12 @@ void Graph::applyNodeRepulsion(Forces forces){
         hashGrid[(int64_t(floor(nodePosition.x / forces.nodeRepulsionRadius)) << 32) | (uint32_t(floor(nodePosition.y / forces.nodeRepulsionRadius)))].push_back(node.viewEntity());
     }
     for(Node& node : nodes){
+        if(!api.exists(node.viewEntity())){
+            continue;
+        }
+        if(node.data.tags.noUpdate){
+            continue;
+        }
         glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;
         int64_t nodeKey = (int64_t(floor(nodePosition.x / forces.nodeRepulsionRadius)) << 32) | (uint32_t(floor(nodePosition.y / forces.nodeRepulsionRadius)));
         int xKey = int(floor(nodePosition.x / forces.nodeRepulsionRadius));
@@ -129,7 +143,7 @@ void Graph::applyNodeRepulsion(Forces forces){
                     continue;
 
                 for (Entity& other : it->second) {
-                    if (other == node.viewEntity())
+                    if (other == node.viewEntity() || !api.exists(other))
                         continue;
                     glm::vec2 otherPos = api.getInstance(other).position;
                     glm::vec2 delta = nodePosition - otherPos;
@@ -156,6 +170,9 @@ void Graph::applyNodeRepulsion(Forces forces){
 
 void Graph::applyCenterAttraction(Forces forces){
     for(Node& node : nodes){
+        if(node.data.tags.noUpdate){
+            continue;
+        }
         api.getInstance(node.viewEntity()).position *= forces.centerAttraction;
     }
 }

@@ -4,8 +4,16 @@
 #include "link.h"
 #include <vector>
 
+struct Tags {
+    bool noUpdate = false;
+    bool noMove = false;
+    bool noDelete = false;
+};
+
 struct NodeData{
-    int value;
+    int value = 0;
+    int delay = 0;
+    Tags tags;
 };
 
 class Node{

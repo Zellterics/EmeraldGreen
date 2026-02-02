@@ -36,12 +36,37 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
         editorState.MonoFontBold = io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t*>(Monocraft_Bold), Monocraft_BoldSize, 18.f, &cfg);
         ApplyNodeEditorStyle();
         first = false;
+        editorState.graph->addNode({0,0});
+        editorState.graph->viewNodeList().back().data.tags.noUpdate = true;
+        editorState.graph->viewNodeList().back().data.tags.noMove = true;
+        editorState.graph->viewNodeList().back().data.tags.noDelete = true;
+        api.setBackgroundColor(Style::Color::Background);
     }
 
     graph.applyLineForces(forces);
     graph.applyNodeRepulsion(forces);
     graph.applyCenterAttraction(forces);
     graph.update();
+
+    // if(!(ImGui::GetFrameCount() % 4)){
+    //     for (Node& node : graph.viewNodeList()) {
+    //         if(node.data.delay < 10){
+    //             for(Link& link : node.links){
+    //                 api.getLine(link.viewLine()).color = Style::Color::Line;
+    //             }
+    //             node.data.delay++;
+    //             continue;
+    //         }
+    //         node.data.delay = 0;
+    //         for (Link& link : node.links) {
+    //             if (node.data.value > 0) {
+    //                 api.getLine(link.viewLine()).color = Style::Color::TempLine;
+    //                 node.data.value--;
+    //                 graph.getNode(link.viewConnection().index).data.value++;
+    //             }
+    //         }
+    //     }
+    // }
 
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse){
@@ -54,7 +79,7 @@ void uiCallback(ThING::API& api, FPSCounter& fps){
     std::span<InstanceData> circleInstances = api.getInstanceVector(InstanceType::Circle);
     std::span<Node> nodes = graph.viewNodeList();
     for(Node& node : nodes){
-        if(!api.exists(node.viewEntity()))
+        if(!api.exists(node.viewEntity()) || !node.data.value)
             continue;
         ImDrawList* draw = ImGui::GetForegroundDrawList();
         ImVec2 position = {0,0};
@@ -73,6 +98,7 @@ void uiCallback(ThING::API& api, FPSCounter& fps){
     ImGui::Text("Current State: %s", stateMachine.stateToString().c_str());
     ImGui::Text("Current Entity: %i", editorState.holdEntity.index);
     ImGui::Text("Current Zoom: %f", editorState.windowData.zoom);
+    ImGui::Text("Current Points: %i", editorState.game.points);
     ImGui::PopID();
     ImGui::End();
     
@@ -82,13 +108,17 @@ void uiCallback(ThING::API& api, FPSCounter& fps){
             ImGui::SetNextWindowSize(ImVec2(250, 150), ImGuiCond_Once);
             ImGui::Begin( ("Circle " + std::to_string(e.index)).c_str(), &editorState.openedWindows[e]);
             ImGui::PushID(e.index);
-
-            if(ImGui::Button("Delete")){
-                graph.deleteNode(e);
-                graph.update();
-                editorState.openedWindows[e] = false;
+            if (!editorState.openedWindows[e]){
+                api.playAudio(Style::Audio::CloseUi);
             }
-
+            if(!graph.getNode(e.index).data.tags.noDelete){
+                if(ImGui::Button("Delete")){
+                    api.playAudio(Style::Audio::DeleteNode);
+                    graph.deleteNode(e);
+                    graph.update();
+                    editorState.openedWindows[e] = false;
+                }
+            }
             ImGui::PopID();
             ImGui::End();
         }
@@ -116,7 +146,6 @@ int main(){
     ThING::API api(ApiFlags_UpdateCallbackFirst);
     editorState.graph = new Graph(api);
     stateMachine.bind(api, editorState);
-    api.setBackgroundColor(Style::Color::Background);
     api.setUpdateCallback(updateCallback);
     api.setUICallback(uiCallback);
     api.run();

@@ -1,2 +1,3 @@
 external/Monocraft.h linguist-vendored
 external/Monocraft-Bold.h linguist-vendored
+assets/audio/** linguist-vendored

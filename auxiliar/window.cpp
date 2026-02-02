@@ -45,6 +45,34 @@ Entity hitEntity(ThING::API& api, WindowData windowData){
     return INVALID_ENTITY;
 }
 
+Entity hitEntity(ThING::API& api, WindowData windowData, glm::vec2 point){
+    static int lastFrame = -1;
+    int currentFrame = ImGui::GetFrameCount();
+    static Entity cache;
+    if(currentFrame == lastFrame){
+        return cache;
+    }
+    lastFrame = currentFrame;
+
+    cache = INVALID_ENTITY;
+    std::span circleInstances = api.getInstanceVector(InstanceType::Circle);
+    for (uint32_t i = 0; i < circleInstances.size(); i++) {
+        const InstanceData& c = circleInstances[i];
+
+        if(!c.alive) continue;
+
+        glm::vec2 distance = point - c.position;
+        if (glm::dot(distance, distance) <= c.scale.x * c.scale.x) {
+            cache = {i, InstanceType::Circle};
+            break;
+        }
+    }
+    if(api.exists(cache)){
+        return cache;
+    }
+    return INVALID_ENTITY;
+}
+
 Entity hitEntity(ThING::API& api, WindowData windowData, float margin){
     static int lastFrame = -1;
     int currentFrame = ImGui::GetFrameCount();

@@ -5,6 +5,10 @@
 #include "auxiliar/window.h"
 #include "imgui.h"
 
+struct GameState{
+    int points = 0;
+};
+
 struct EditorState{
     Entity holdEntity = INVALID_ENTITY;
     Entity tempLine = INVALID_ENTITY;
@@ -18,6 +22,8 @@ struct EditorState{
     ImFont* MonoFont = nullptr;
     ImFont* MonoFontBold = nullptr;
     float MonoFontSize = 18.f;
+
+    GameState game;
 };
 
 extern EditorState editorState;

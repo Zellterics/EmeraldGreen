@@ -13,7 +13,7 @@ public:
     Graph(ThING::API& api);
     Entity addNode(glm::vec2 pos);
     void deleteNode(Entity e);
-    void connect(Entity from, Entity to);
+    bool connect(Entity from, Entity to);
     void update();
     Node& last(){return nodes.empty() ? nullNode : nodes.back();}
     Node& getNode(int i) {return i < nodes.size() ? nodes[i] : nullNode;};
