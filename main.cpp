@@ -103,21 +103,22 @@ void uiCallback(ThING::API& api, FPSCounter& fps){
     ImGui::Text("Current Entity: %i", editorState.holdEntity.index);
     ImGui::Text("Current Zoom: %f", editorState.windowData.zoom);
     ImGui::Text("Current Points: %i", editorState.game.points);
-    {
-        if(openTree(api, "Update Configuration")){
-            ImGui::PushItemWidth(120.0f);
-            ImGui::SliderFloat("Center Attraction", &forces.centerAttraction, 0, .1f);
-            ImGui::SliderFloat("Node Repulsion", &forces.nodeRepulsionForce, 0, 10.f);
-            ImGui::SliderFloat("Repulsion Radius", &forces.nodeRepulsionRadius, 0, 300.f);
-            ImGui::SliderFloat("Line Force", &forces.lineForce, 0, .2f);
-            ImGui::SliderFloat("Line Center", &forces.lineCenter, 0, 180.f);
-            ImGui::PopItemWidth();
-            !forces.centerAttraction ? editorState.config.centerAttraction = false : editorState.config.centerAttraction = true;
-            !forces.nodeRepulsionForce ? editorState.config.nodeRepulsion = false : editorState.config.nodeRepulsion = true;
-            !forces.lineForce ? editorState.config.lineForces = false : editorState.config.lineForces = true;
+    static int volume = 255;
+    ImGui::SliderInt("Volume", &volume, 0, 255);
+    api.setVolume(volume);
+    if(openTree(api, "Update Configuration")){
+        ImGui::PushItemWidth(120.0f);
+        ImGui::SliderFloat("Center Attraction", &forces.centerAttraction, 0, .1f);
+        ImGui::SliderFloat("Node Repulsion", &forces.nodeRepulsionForce, 0, 10.f);
+        ImGui::SliderFloat("Repulsion Radius", &forces.nodeRepulsionRadius, 0, 300.f);
+        ImGui::SliderFloat("Line Force", &forces.lineForce, 0, .2f);
+        ImGui::SliderFloat("Line Center", &forces.lineCenter, 0, 180.f);
+        ImGui::PopItemWidth();
+        !forces.centerAttraction ? editorState.config.centerAttraction = false : editorState.config.centerAttraction = true;
+        !forces.nodeRepulsionForce ? editorState.config.nodeRepulsion = false : editorState.config.nodeRepulsion = true;
+        !forces.lineForce ? editorState.config.lineForces = false : editorState.config.lineForces = true;
 
-            ImGui::TreePop();
-}
+        ImGui::TreePop();
     }
     ImGui::PopID();
     ImGui::End();

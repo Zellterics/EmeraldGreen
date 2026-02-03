@@ -31,10 +31,10 @@ namespace Style {
     namespace Audio {
         const std::string BasePath = "./assets/audio/";
         const std::string DeleteNode = BasePath + "footstep_snow_003.wav";
-        const std::string ReleaseNode = BasePath + "impactMetal_001.wav";
+        const std::string ReleaseNode = BasePath + "impactMetal_001F.wav";
         const std::string OpenUi = BasePath + "impactGlass_heavy_003.wav";
         const std::string CloseUi = BasePath + "impactPlank_medium_003.wav";
-        const std::string SelectNode = BasePath + "impactMetal_002.wav";
+        const std::string SelectNode = BasePath + "impactMetal_002F.wav";
         const std::string ConnectNode = BasePath + "impactGeneric_light_003.wav";
         const std::string DisconnectNode = BasePath + "impactGeneric_light_002.wav";
         const std::string Check = BasePath + "click_003.wav";

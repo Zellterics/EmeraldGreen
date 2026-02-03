@@ -165,7 +165,9 @@ void StateMachine::dragginLine(){
         api->getInstance(editorState->holdEntity).scale = {Style::NodeSize, Style::NodeSize};
         Entity e = hitEntity(*api, editorState->windowData, api->getLine(editorState->tempLine).point2);
         if(e != INVALID_ENTITY){
-            if (editorState->graph->connect(editorState->holdEntity, e)){
+            if(editorState->holdEntity == e){
+                api->playAudio(Style::Audio::ReleaseNode);
+            } else if (editorState->graph->connect(editorState->holdEntity, e)){
                 api->playAudio(Style::Audio::ConnectNode, 150);
             } else {
                 api->playAudio(Style::Audio::DisconnectNode, 150);
