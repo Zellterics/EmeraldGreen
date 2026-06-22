@@ -7,6 +7,17 @@
 
 struct GameState{
     int points = 0;
+
+    Entity currentNode = INVALID_ENTITY;
+
+    int winTimer = -1;
+    int loseTimer = -1;
+
+    std::string gameLevelName = "test";
+
+    int level = -1; //Mañana. setear nivel al doble click en nodo en menu. si nivel ganado winnedLevel = level, cuando loadMenu 
+    int winnedLevel = -1; //for(node : node) if(node.value == winnedLevel) node.type = None, node.adyacent.type = good... Si entras a un nodo None level = -1;
+    // Para no volver a poner verde, obviamente antes del for para revisar winnedLevel revisar que winnedLevel no sea -1;
 };
 
 struct ConfigState{

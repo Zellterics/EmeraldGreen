@@ -18,14 +18,19 @@ namespace Style {
         // constexpr glm::vec4 Line = {0.60f, 0.75f, 0.60f, 1.0f};
         // constexpr glm::vec4 TempLine = {0.45f, 0.60f, 0.45f, 1.0f};
 
-        constexpr glm::vec4 Background = {0.03f, 0.06f, 0.05f, 1.0f};
-        constexpr glm::vec4 Node = {0.85f, 0.95f, 0.90f, 1.0f};
-        constexpr glm::vec4 Outline = {0.05f, 0.20f, 0.15f, 1.0f};
-        constexpr glm::vec4 Line = {0.00f, 0.80f, 0.55f, 1.0f};
-        constexpr glm::vec4 TempLine = {0.15f, 0.50f, 0.45f, 1.0f};
+        constexpr glm::vec4 Background = {.03f, .06f, .05f, 1.f};
+        constexpr glm::vec4 Outline = {.2f, .2f, .2f, 1.f};
+        constexpr glm::vec4 Line = {.1f, .1f, .1f, 1.f};
+        constexpr glm::vec4 TempLine = {.15f, .15f, .15f, 1.f};
 
-        constexpr glm::vec4 NodeSelected = {0.60f, 0.90f, 0.80f, 1.0f};
-
+        constexpr glm::vec4 Node = {.85f, .95f, .9f, 1.f};
+        constexpr glm::vec4 NodeSelected = {.5f, .7f, .8f, 1.f};
+        constexpr glm::vec4 NodeBad = {1.f, .25f, .25f, 1.f};
+        constexpr glm::vec4 NodeBadSelected = {1.f, .35f, .35f, 1.f};
+        constexpr glm::vec4 NodeGood = {.25f, 1.f, .25f, 1.f};
+        constexpr glm::vec4 NodeGoodSelected = {.35f, 1.f, .35f, 1.f};
+        constexpr glm::vec4 NodeGoal = {.3f, .3f, 1.f, 1.f};
+        constexpr glm::vec4 NodeGoalSelected = {.4f, .4f, 1.f, 1.f};
     }
 
     namespace Audio {
@@ -41,6 +46,8 @@ namespace Style {
         const std::string UnCheck = BasePath + "click_002.wav";
         const std::string OpenTree = BasePath + "click_001.wav";
         const std::string CloseTree = BasePath + "click_005.wav";
+        const std::string Win = BasePath + "confirmation_002.wav";
+        const std::string Lose = BasePath + "error_008.wav";
     }
 
     namespace UI {

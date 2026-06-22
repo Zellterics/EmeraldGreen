@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 struct EditorState;
@@ -12,9 +14,18 @@ enum class StateM{
     WaitRightIdle,
     DraggingLine,
     DraggingNode,
-    PanningCamera,
     DraggingRight,
-    PlayingAnimation
+    PlayingAnimation,
+
+    GameIdle,
+    GameWaitLeftIdle,
+    GameWaitRightIdle, // Make just one version with parammeters (StateM returnState) to go back to the respectibe IdleStage Same witg Menu
+    GameDraggingRight, // if returnState == GameIdle; menuWindow(api, resume = true); for resume option
+
+    MenuIdle,
+
+    Menu,
+    PanningCamera,
 };
 
 class StateMachine {
@@ -22,6 +33,8 @@ public:
     StateMachine();
     void bind(ThING::API& api, EditorState& editorState);
     std::string stateToString();
+    StateM& getState() {return currentState;}
+    StateM& getReturnState() {return returnState;}
     void update();
 private:
     void selectNode();
@@ -35,6 +48,16 @@ private:
     void panningCamera();
     void draggingRight();
     void playingAnimation();
+
+    void gameIdle();
+    void gameWaitLeftIdle();
+    void gameWaitRightIdle();
+    void gameDraggingRight();
+
+    void menuIdle();
+
+    void menu();
+    StateM returnState;
     StateM currentState;
 
     ThING::API* api;

@@ -17,7 +17,10 @@ public:
     void update();
     Node& last(){return nodes.empty() ? nullNode : nodes.back();}
     Node& getNode(int i) {return i < nodes.size() ? nodes[i] : nullNode;};
+    Node& getNode(Entity e) {return e.index < nodes.size() ? nodes[e.index] : nullNode;}
     std::span<Node> viewNodeList() {return nodes;}
+
+    void clearNodes(){nodes.clear();}
 
     void applyLineForces(Forces forces);
     void applyNodeRepulsion(Forces forces);

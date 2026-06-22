@@ -1,4 +1,5 @@
 #include "window.h"
+#include <string>
 
 glm::vec2 mousePosition(WindowData windowData){
     static int lastFrame = -1;
@@ -101,21 +102,14 @@ Entity hitEntity(ThING::API& api, WindowData windowData, float margin){
 }
 
 bool openTree(ThING::API& api, std::string id){
-    static std::unordered_map<std::string, bool> wasOpen;
-    if(!wasOpen.contains(id)){
-        wasOpen[id] = ImGui::TreeNode(id.c_str());
-        return wasOpen[id];
-    }
-    bool isOpen = ImGui::TreeNode(id.c_str());
+    bool open = ImGui::TreeNode(id.c_str());
 
-    if (wasOpen[id] && !isOpen) {
-        api.playAudio(Style::Audio::CloseTree);
+    if (ImGui::IsItemToggledOpen())
+    {
+        api.playAudio(open ? Style::Audio::OpenTree : Style::Audio::CloseTree);
     }
-    if(!wasOpen[id] && isOpen){
-        api.playAudio(Style::Audio::OpenTree);
-    }
-    wasOpen[id] = isOpen;
-    return isOpen;
+
+    return open;
 }
 
 bool beginWindow(ThING::API& api, std::string id){

@@ -1,0 +1,267 @@
+{
+    "CenterAttraction": 0.009999999776482582,
+    "LineCenter": 90.0,
+    "LineForce": 0.03999999910593033,
+    "NodeRepulsionForce": 4.5,
+    "NodeRepulsionRadius": 150.0,
+    "nodes": [
+        {
+            "Alive": 1,
+            "ID": 0,
+            "Links": [
+                3,
+                1,
+                12
+            ],
+            "Position": {
+                "x": 13.429802894592285,
+                "y": 21.917810440063477
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 0,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 1,
+            "Links": [
+                2,
+                12,
+                7
+            ],
+            "Position": {
+                "x": -55.80495834350586,
+                "y": 81.22569274902344
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 2,
+            "Links": [
+                0,
+                8
+            ],
+            "Position": {
+                "x": 42.45315933227539,
+                "y": 123.00003814697266
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 3,
+            "Links": [
+                4,
+                9
+            ],
+            "Position": {
+                "x": 95.61796569824219,
+                "y": -13.797808647155762
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 4,
+            "Links": [
+                5
+            ],
+            "Position": {
+                "x": 81.33815002441406,
+                "y": -123.45516967773438
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 5,
+            "Links": [
+                10,
+                0
+            ],
+            "Position": {
+                "x": -4.590653896331787,
+                "y": -75.31226348876953
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 6,
+            "Links": [
+                1
+            ],
+            "Position": {
+                "x": -156.696044921875,
+                "y": 52.188228607177734
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 7,
+            "Links": [
+                1
+            ],
+            "Position": {
+                "x": -76.7955093383789,
+                "y": 172.64596557617188
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 8,
+            "Links": [
+                3,
+                2
+            ],
+            "Position": {
+                "x": 132.915771484375,
+                "y": 85.45244598388672
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 9,
+            "Links": [
+                3
+            ],
+            "Position": {
+                "x": 185.23150634765625,
+                "y": -41.88554000854492
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 10,
+            "Links": [
+                11
+            ],
+            "Position": {
+                "x": -56.27090072631836,
+                "y": -157.44818115234375
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 11,
+            "Links": [
+                12
+            ],
+            "Position": {
+                "x": -143.07374572753906,
+                "y": -90.07915496826172
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 12,
+            "Links": [
+                6,
+                5
+            ],
+            "Position": {
+                "x": -80.54586791992188,
+                "y": -15.54983901977539
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 1,
+            "Value": 0
+        },
+        {
+            "Alive": 0,
+            "ID": 13,
+            "Position": {
+                "x": 0.007878299802541733,
+                "y": 0.03060470148921013
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 0,
+            "Value": 0
+        }
+    ]
+}

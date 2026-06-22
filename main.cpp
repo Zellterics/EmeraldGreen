@@ -1,25 +1,19 @@
-#include "ThING/core.h"
 #include "ThING/types/apiTypes.h"
 #include "ThING/types/enums.h"
-#include "ThING/types/renderData.h"
-#include "auxiliar/window.h"
+#include "auxiliar/style.h"
 #include "glm/fwd.hpp"
 #include "globals.h"
 #include <ThING/api.h>
 #include <cstdint>
-#include <imgui.h>
-#include <span>
 #include <string>
-#include <unordered_map>
-#include <utility>
 
-#include "auxiliar/style.h"
-#include "graph/graph.h"
 #include "graph/node.h"
-#include "stateMachine/stateMachine.h"
+#include "imgui.h"
+#include "auxiliar/editor.h"
 
 #include "external/Monocraft.h"
 #include "external/Monocraft-Bold.h"
+#include "stateMachine/stateMachine.h"
 
 void updateCallback(ThING::API& api, FPSCounter& fps){
     static Graph& graph = *editorState.graph; 
@@ -36,12 +30,35 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
         editorState.MonoFontBold = io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t*>(Monocraft_Bold), Monocraft_BoldSize, 18.f, &cfg);
         ApplyNodeEditorStyle();
         first = false;
-        editorState.graph->addNode({0,0});
-        editorState.graph->viewNodeList().back().data.tags.noUpdate = true;
-        editorState.graph->viewNodeList().back().data.tags.noMove = true;
-        editorState.graph->viewNodeList().back().data.tags.noDelete = true;
+        // loadLevel(api, "Menu");
     }
+    if(!api.exists(editorState.game.currentNode)){
+        editorState.game.currentNode = INVALID_ENTITY;
+    }
+    if(graph.viewNodeList().size() > 0){
+        if(stateMachine.getState() == StateM::Idle){
+            if(editorState.game.currentNode != INVALID_ENTITY){
+                graph.getNode(editorState.game.currentNode).setType(NodeType::None);
+                api.getInstance(editorState.game.currentNode).color = graph.getNode(editorState.game.currentNode).data.baseColor;
+            }
+            for(Node& node : graph.viewNodeList()){
+                if(api.getInstance(node.viewEntity()).alive){
+                    editorState.game.currentNode = node.viewEntity();
+                    graph.getNode(editorState.game.currentNode).setType(NodeType::None);
+                    api.getInstance(editorState.game.currentNode).color = graph.getNode(editorState.game.currentNode).data.baseColor;
+                    break;
+                }
+            }
+        } else if(editorState.game.currentNode == INVALID_ENTITY){
+            for(Node& node : graph.viewNodeList()){
+                if(api.getInstance(node.viewEntity()).alive){
+                    editorState.game.currentNode = node.viewEntity();
+                    break;
+                }
+            }
+        }
 
+    }
     if(editorState.config.lineForces)
         graph.applyLineForces(forces);
     if(editorState.config.nodeRepulsion)
@@ -50,29 +67,93 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
         graph.applyCenterAttraction(forces);
     graph.update();
 
-    // if(!(ImGui::GetFrameCount() % 4)){
-    //     for (Node& node : graph.viewNodeList()) {
-    //         if(node.data.delay < 10){
-    //             for(Link& link : node.links){
-    //                 api.getLine(link.viewLine()).color = Style::Color::Line;
-    //             }
-    //             node.data.delay++;
-    //             continue;
-    //         }
-    //         node.data.delay = 0;
-    //         for (Link& link : node.links) {
-    //             if (node.data.value > 0) {
-    //                 api.getLine(link.viewLine()).color = Style::Color::TempLine;
-    //                 node.data.value--;
-    //                 graph.getNode(link.viewConnection().index).data.value++;
-    //             }
-    //         }
-    //     }
-    // }
+    for(Node& node : graph.viewNodeList()){
+        if(node.data.type == NodeType::Goal){
+            node.data.value = editorState.game.points;
+        }
+    }
+    static float secondCounter = 0;
+    if(editorState.game.currentNode != INVALID_ENTITY){
+        if(graph.getNode(editorState.game.currentNode).data.type == NodeType::Goal && editorState.game.winTimer < 0 && editorState.game.loseTimer < 0){
+            Node& winNode = graph.getNode(editorState.game.currentNode);
+            if(winNode.data.value >= 0){
+                api.playAudio(Style::Audio::Win);
+                secondCounter = 0;
+                editorState.game.winTimer = 1;
+            } else {
+                api.playAudio(Style::Audio::Lose);
+                secondCounter = 0;
+                editorState.game.loseTimer = 1;
+            }
+        }
+    }
+    if(editorState.game.winTimer > 0){
+        secondCounter += fps.getDeltaTime();
+        if(secondCounter >= 1){
+            secondCounter = 0;
+            editorState.game.winTimer--;
+            if(editorState.game.winTimer <= 0){
+                stateMachine.getState() = StateM::MenuIdle;
+                editorState.game.currentNode = INVALID_ENTITY;
+                editorState.game.winTimer = -1;
+                loadLevel(api, "Menu");
+            }
+        }
+        return;
+    }
+    if(editorState.game.loseTimer > 0){
+        secondCounter += fps.getDeltaTime();
+        if(secondCounter >= 1){
+            secondCounter = 0;
+            editorState.game.loseTimer--;
+            if(editorState.game.loseTimer <= 0){
+                loadLevel(api, editorState.game.gameLevelName);
+                stateMachine.getState() = StateM::GameIdle;
+                editorState.game.points = 0;
+                editorState.game.currentNode = INVALID_ENTITY;
+                editorState.game.loseTimer = -1;
+            }
+        }
+        return;
+    }
 
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse){
         stateMachine.update();
+    }{
+        static Entity lastNode = editorState.game.currentNode;
+        if(editorState.game.currentNode != INVALID_ENTITY){
+            if(lastNode == INVALID_ENTITY){
+                lastNode = editorState.game.currentNode;
+            }
+            if(lastNode != editorState.game.currentNode){
+                lastNode = editorState.game.currentNode;
+                switch (graph.getNode(lastNode).data.type) {
+                    case NodeType::Bad:
+                        editorState.game.points--;
+                        break;
+                    case NodeType::None:
+                        break;
+                    case NodeType::Good:
+                        editorState.game.points++;
+                        graph.getNode(lastNode).data.type = NodeType::None;
+                        graph.getNode(lastNode).data.baseColor = Style::Color::Node;
+                        graph.getNode(lastNode).data.selectedColor = Style::Color::NodeSelected;
+                        api.getInstance(lastNode).color = Style::Color::NodeSelected;
+                        break;
+                    case NodeType::Goal:
+                        //editorState.game.points += 100;
+                        break;
+                    case NodeType::Count:
+                        break;
+                }
+            }
+            api.getInstance(editorState.game.currentNode).color = graph.getNode(editorState.game.currentNode).data.selectedColor;
+            glm::vec2 size = {Style::NodeSize + Style::NodeSelectedPadding, Style::NodeSize + Style::NodeSelectedPadding};
+            api.getInstance(editorState.game.currentNode).scale = size;
+        } else {
+            lastNode = INVALID_ENTITY;
+        }
     }
 }
 
@@ -83,7 +164,7 @@ void uiCallback(ThING::API& api, FPSCounter& fps){
     for(Node& node : nodes){
         if(!api.exists(node.viewEntity()) || !node.data.value)
             continue;
-        ImDrawList* draw = ImGui::GetForegroundDrawList();
+        ImDrawList* draw = ImGui::GetBackgroundDrawList();
         ImVec2 position = {0,0};
         std::string text = std::to_string(node.data.value);
         float fontSize = 18.0f * editorState.windowData.zoom;
@@ -94,91 +175,14 @@ void uiCallback(ThING::API& api, FPSCounter& fps){
         draw->AddText(editorState.MonoFontBold, fontSize, position, IM_COL32_BLACK, text.c_str());
     }
     ImGui::PushFont(editorState.MonoFont, Style::UI::TextSize);
-    ImGui::SetNextWindowPos({0,0}, ImGuiCond_Once);
-    ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(320, 400), ImGuiCond_Once);
-    beginWindow(api, "debug");
-    ImGui::PushID(-1);
-    ImGui::Text("Current State: %s", stateMachine.stateToString().c_str());
-    ImGui::Text("Current Entity: %i", editorState.holdEntity.index);
-    ImGui::Text("Current Zoom: %f", editorState.windowData.zoom);
-    ImGui::Text("Current Points: %i", editorState.game.points);
-    static int volume = 255;
-    ImGui::SliderInt("Volume", &volume, 0, 255);
-    api.setVolume(volume);
-    if(openTree(api, "Update Configuration")){
-        ImGui::PushItemWidth(120.0f);
-        ImGui::SliderFloat("Center Attraction", &forces.centerAttraction, 0, .1f);
-        ImGui::SliderFloat("Node Repulsion", &forces.nodeRepulsionForce, 0, 10.f);
-        ImGui::SliderFloat("Repulsion Radius", &forces.nodeRepulsionRadius, 0, 300.f);
-        ImGui::SliderFloat("Line Force", &forces.lineForce, 0, .2f);
-        ImGui::SliderFloat("Line Center", &forces.lineCenter, 0, 180.f);
-        ImGui::PopItemWidth();
-        !forces.centerAttraction ? editorState.config.centerAttraction = false : editorState.config.centerAttraction = true;
-        !forces.nodeRepulsionForce ? editorState.config.nodeRepulsion = false : editorState.config.nodeRepulsion = true;
-        !forces.lineForce ? editorState.config.lineForces = false : editorState.config.lineForces = true;
-
-        ImGui::TreePop();
+    if(stateMachine.getState() == StateM::Menu){
+        menuWindow(api);
+    } else {
+        debugWindow(api);
+        nodeWindows(api);
     }
-    ImGui::PopID();
-    ImGui::End();
-    
-    for(auto& [e, open] : editorState.openedWindows){
-        if(editorState.openedWindows.contains(e) && editorState.openedWindows[e]){
-            ImGui::SetNextWindowPos(ImGui::GetMousePos(), ImGuiCond_Appearing);
-            ImGui::SetNextWindowSize(ImVec2(250, 250), ImGuiCond_Once);
-            beginWindow(api, ("Circle " + std::to_string(e.index)).c_str(), &editorState.openedWindows[e]);
-            ImGui::PushID(e.index);
-            if (!editorState.openedWindows[e]){
-                api.playAudio(Style::Audio::CloseUi, 180);
-            }
-            if(openTree(api, "Tags")){
-                Tags& tags = graph.getNode(e.index).data.tags;
-                int lastTags = tags.noDelete + tags.noUpdate + tags.noMove;
-                ImGui::Checkbox("No Delete", &tags.noDelete);
-                ImGui::Checkbox("No Update", &tags.noUpdate);
-                ImGui::Checkbox("No Move", &tags.noMove);
-                int newTags = tags.noDelete + tags.noUpdate + tags.noMove;
-                if(newTags < lastTags){
-                    api.playAudio(Style::Audio::UnCheck);
-                }
-                if(newTags > lastTags){
-                    api.playAudio(Style::Audio::Check);
-                }
-
-                ImGui::TreePop();
-            }
-            
-            if(!graph.getNode(e.index).data.tags.noDelete){
-                if(ImGui::Button("Delete")){
-                    api.playAudio(Style::Audio::DeleteNode);
-                    graph.deleteNode(e);
-                    graph.update();
-                    editorState.openedWindows[e] = false;
-                }
-            }
-            ImGui::PopID();
-            ImGui::End();
-        }
-    }
+    scrollZoom(api);    
     ImGui::PopFont();
-    float scroll = ImGui::GetIO().MouseWheel;
-    
-    glm::vec2 pos = mousePosition(editorState.windowData);
-    if(scroll != 0){
-        scroll /= 20;
-        float oldZoom = editorState.windowData.zoom;
-        editorState.windowData.zoom *= 1 + scroll;
-        if(editorState.windowData.zoom < .05){
-            editorState.windowData.zoom = .05;
-        } else if(editorState.windowData.zoom > 120){
-            editorState.windowData.zoom = 120;
-        } else {
-            editorState.windowData.offset += (pos - editorState.windowData.offset) * (1.f - (oldZoom / editorState.windowData.zoom));
-            api.setZoom(editorState.windowData.zoom);
-            api.setOffset(editorState.windowData.offset);
-        }
-    }
 }
 
 int main(){
