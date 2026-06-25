@@ -4,6 +4,9 @@
 #include "graph/graph.h"
 #include "auxiliar/window.h"
 #include "imgui.h"
+#include <cstdint>
+
+#include "./external/zlog.h"
 
 struct GameState{
     int points = 0;
@@ -21,10 +24,10 @@ struct GameState{
 };
 
 struct ConfigState{
-    bool lineForces = true;
-    bool nodeRepulsion = true;
-    bool centerAttraction = true;
+    uint8_t forceFlags = ForceFlags_None;
 };
+
+extern Zlog zlog;
 
 struct EditorState{
     Entity holdEntity = INVALID_ENTITY;
@@ -42,6 +45,14 @@ struct EditorState{
 
     ConfigState config;
     GameState game;
+    Node& getCurrentNode(){
+        if(graph == nullptr || game.currentNode == INVALID_ENTITY){
+            static Node nullNode(INVALID_ENTITY);
+            zlog.warn("EditorState.getCurrentNode returned nullNode");
+            return nullNode;
+        }
+        return graph->getNode(game.currentNode);
+    }
 };
 
 extern EditorState editorState;

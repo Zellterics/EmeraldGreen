@@ -91,6 +91,15 @@ void Graph::update(){
     }
 }
 
+void Graph::applyForces(Forces forces, const uint8_t forceFlags){
+    if(!(forceFlags & ForceFlags_SkipCenterAttraction))
+        applyCenterAttraction(forces);
+    if(!(forceFlags & ForceFlags_SkipLines))
+        applyLineForces(forces);
+    if(!(forceFlags & ForceFlags_SkipNodeRepulsion))
+        applyNodeRepulsion(forces);
+}
+
 void Graph::applyLineForces(Forces forces){
     for(Node& node : nodes){
         glm::vec2& nodePosition = api.getInstance(node.viewEntity()).position;

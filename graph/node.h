@@ -10,6 +10,7 @@ enum class NodeType{
     Bad,
     Good,
     Goal,
+    Start,
     Count
 };
 
@@ -58,6 +59,11 @@ public:
                 data.baseColor = Style::Color::NodeGoal;
                 data.selectedColor = Style::Color::NodeGoalSelected;
                 data.type = NodeType::Goal;
+                break;
+            case NodeType::Start:
+                data.baseColor = Style::Color::Node;
+                data.selectedColor = Style::Color::NodeSelected;
+                data.type = NodeType::Start;
                 break;
             case NodeType::Count:
                 data.baseColor = Style::Color::Node;

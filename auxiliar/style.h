@@ -24,13 +24,14 @@ namespace Style {
         constexpr glm::vec4 TempLine = {.15f, .15f, .15f, 1.f};
 
         constexpr glm::vec4 Node = {.85f, .95f, .9f, 1.f};
-        constexpr glm::vec4 NodeSelected = {.5f, .7f, .8f, 1.f};
+        constexpr glm::vec4 NodeSelected = {.1f, .3f, .8f, 1.f};
         constexpr glm::vec4 NodeBad = {1.f, .25f, .25f, 1.f};
         constexpr glm::vec4 NodeBadSelected = {1.f, .35f, .35f, 1.f};
         constexpr glm::vec4 NodeGood = {.25f, 1.f, .25f, 1.f};
         constexpr glm::vec4 NodeGoodSelected = {.35f, 1.f, .35f, 1.f};
         constexpr glm::vec4 NodeGoal = {.3f, .3f, 1.f, 1.f};
         constexpr glm::vec4 NodeGoalSelected = {.4f, .4f, 1.f, 1.f};
+        // Add daltonic mode, baubau Can't tell between Node and Selected Node
     }
 
     namespace Audio {

@@ -12,6 +12,7 @@ set(THING_SHADER_OVERRIDES
 )
 
 add_subdirectory(ThING-Engine)
+target_compile_definitions(ThING PUBLIC $<$<CONFIG:Debug>:DEBUG>)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     graph/*.cpp

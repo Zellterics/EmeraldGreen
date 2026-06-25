@@ -146,10 +146,11 @@ void StateMachine::waitLeftIdle(){
                 return;
             }
             Node& node = editorState->graph->getNode(editorState->holdEntity);
-            if(static_cast<NodeType>((static_cast<int>(node.data.type) + 1)) == NodeType::Count){
+            NodeType newNodeType = static_cast<NodeType>((static_cast<int>(node.data.type) + 1));
+            if(newNodeType == NodeType::Count || newNodeType == NodeType::Start){
                 node.setType(static_cast<NodeType>(0));
             } else {
-                node.setType(static_cast<NodeType>(static_cast<int>(node.data.type) + 1));
+                node.setType(newNodeType);
             }
             deselectNode();
             currentState = StateM::Idle;
@@ -336,6 +337,7 @@ void StateMachine::gameIdle(){
         if(editorState->holdEntity != INVALID_ENTITY && editorState->game.currentNode != INVALID_ENTITY){
             for(Link& link : editorState->graph->getNode(editorState->game.currentNode).links){
                 if(link.viewConnection() == editorState->holdEntity){
+                    // Here you can detect the type node to play different sounds
                     api->playAudio(Style::Audio::SelectNode);
                     api->getInstance(editorState->game.currentNode).color = editorState->graph->getNode(editorState->game.currentNode).data.baseColor;
                     api->getInstance(editorState->game.currentNode).scale = {Style::NodeSize, Style::NodeSize};
@@ -355,6 +357,13 @@ void StateMachine::gameIdle(){
         return;
     }
     if(ImGui::IsMouseClicked(ImGuiMouseButton_Middle)){
+        if(editorState->game.currentNode == INVALID_ENTITY){
+            currentState = StateM::Idle;
+            return;
+        }
+        editorState->game.points = 0;
+        api->getInstance(editorState->game.currentNode).color = editorState->getCurrentNode().data.baseColor;
+        editorState->game.currentNode = INVALID_ENTITY;
         currentState = StateM::Idle;
         return;
     }

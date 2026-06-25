@@ -3,6 +3,7 @@
 #include "../external/json.hpp"
 #include "ThING/types/enums.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "style.h"
 #include <cstdint>
 #include <string>
@@ -43,19 +44,53 @@ void nodeWindows(ThING::API& api){
                 ImGui::RadioButton("Bad", &newChoice, 1);
                 ImGui::RadioButton("Good", &newChoice, 2);
                 ImGui::RadioButton("Goal", &newChoice, 3);
-                if(newChoice < lastChoice){
-                    api.playAudio(Style::Audio::UnCheck);
-                }
-                if(newChoice > lastChoice){
-                    api.playAudio(Style::Audio::Check);
-                }
-                if(!(editorState.game.currentNode == e)){
-                    graph.getNode(e).setType(static_cast<NodeType>(newChoice));
-                    api.getInstance(e).color = graph.getNode(e).data.baseColor;
+                ImGui::RadioButton("Start", &newChoice, 4);
+                if(lastChoice != newChoice){
+                    if(lastChoice == 4){
+                        api.playAudio(Style::Audio::UnCheck);
+                    } else {
+                        if(newChoice < lastChoice){
+                            api.playAudio(Style::Audio::UnCheck);
+                        }
+                        if(newChoice > lastChoice){
+                            api.playAudio(Style::Audio::Check);
+                        }
+                        graph.getNode(e).setType(static_cast<NodeType>(newChoice));
+                        if(newChoice == 4){
+                            graph.getNode(editorState.game.currentNode).setType(NodeType::None);
+                            api.getInstance(editorState.game.currentNode).color = Style::Color::Node;
+                            editorState.game.currentNode = e;
+                            api.getInstance(e).color = graph.getNode(e).data.selectedColor;
+                        } else {
+                            api.getInstance(e).color = graph.getNode(e).data.baseColor;
+                        }
+                        
+                        
+                    }
                 }
                 ImGui::TreePop();
             }
             
+            if(openTree(api, "Data")){
+                int lastData = 0;
+                int newData = 0;
+                newData = graph.getNode(e).data.value;
+                lastData = newData;
+                if(ImGui::InputInt("Value", &graph.getNode(e).data.value)){
+                    if(graph.getNode(e).data.value > 999){
+                        graph.getNode(e).data.value = 999;
+                        api.playAudio(Style::Audio::DisconnectNode);
+                        ImGui::ClearActiveID();
+                    }
+                    if(graph.getNode(e).data.value < 0){
+                        graph.getNode(e).data.value = 0;
+                        api.playAudio(Style::Audio::DisconnectNode);
+                        ImGui::ClearActiveID();
+                    }
+                }
+                ImGui::TreePop();
+            }
+
             if(!graph.getNode(e.index).data.tags.noDelete){
                 if(ImGui::Button("Delete")){
                     {
@@ -192,9 +227,10 @@ void debugWindow(ThING::API &api){
         ImGui::SliderFloat("Line Force", &forces.lineForce, 0, .2f);
         ImGui::SliderFloat("Line Center", &forces.lineCenter, 0, 180.f);
         ImGui::PopItemWidth();
-        !forces.centerAttraction ? editorState.config.centerAttraction = false : editorState.config.centerAttraction = true;
-        !forces.nodeRepulsionForce ? editorState.config.nodeRepulsion = false : editorState.config.nodeRepulsion = true;
-        !forces.lineForce ? editorState.config.lineForces = false : editorState.config.lineForces = true;
+        editorState.config.forceFlags = 
+            (forces.centerAttraction ? 0 : ForceFlags_SkipCenterAttraction) |
+            (forces.nodeRepulsionForce ? 0 : ForceFlags_SkipNodeRepulsion) |
+            (forces.lineForce ? 0 : ForceFlags_SkipLines);
 
         ImGui::TreePop();
     }

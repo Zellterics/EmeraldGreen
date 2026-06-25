@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 
+#include "graph/graph.h"
 #include "graph/node.h"
 #include "imgui.h"
 #include "auxiliar/editor.h"
@@ -15,80 +16,34 @@
 #include "external/Monocraft-Bold.h"
 #include "stateMachine/stateMachine.h"
 
-void updateCallback(ThING::API& api, FPSCounter& fps){
-    static Graph& graph = *editorState.graph; 
-    static bool first = true;
+void imGuiInitialize(){
+    ImGuiIO& io = ImGui::GetIO();
+    ImFontConfig cfg;
+    cfg.FontDataOwnedByAtlas = false;
+    editorState.MonoFontSize = 18.f;
+    editorState.MonoFont = io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t*>(Monocraft), MonocraftSize, 18.f, &cfg);
+    editorState.MonoFontBold = io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t*>(Monocraft_Bold), Monocraft_BoldSize, 18.f, &cfg);
+    ApplyNodeEditorStyle();
+}
 
-    api.getWindowSize(&editorState.windowData.size.width, &editorState.windowData.size.height);
-
-    if(first){
-        ImGuiIO& io = ImGui::GetIO();
-        ImFontConfig cfg;
-        cfg.FontDataOwnedByAtlas = false;
-        editorState.MonoFontSize = 18.f;
-        editorState.MonoFont = io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t*>(Monocraft), MonocraftSize, 18.f, &cfg);
-        editorState.MonoFontBold = io.Fonts->AddFontFromMemoryTTF(const_cast<uint8_t*>(Monocraft_Bold), Monocraft_BoldSize, 18.f, &cfg);
-        ApplyNodeEditorStyle();
-        first = false;
-        // loadLevel(api, "Menu");
-    }
-    if(!api.exists(editorState.game.currentNode)){
-        editorState.game.currentNode = INVALID_ENTITY;
-    }
-    if(graph.viewNodeList().size() > 0){
-        if(stateMachine.getState() == StateM::Idle){
-            if(editorState.game.currentNode != INVALID_ENTITY){
-                graph.getNode(editorState.game.currentNode).setType(NodeType::None);
-                api.getInstance(editorState.game.currentNode).color = graph.getNode(editorState.game.currentNode).data.baseColor;
-            }
-            for(Node& node : graph.viewNodeList()){
-                if(api.getInstance(node.viewEntity()).alive){
-                    editorState.game.currentNode = node.viewEntity();
-                    graph.getNode(editorState.game.currentNode).setType(NodeType::None);
-                    api.getInstance(editorState.game.currentNode).color = graph.getNode(editorState.game.currentNode).data.baseColor;
-                    break;
-                }
-            }
-        } else if(editorState.game.currentNode == INVALID_ENTITY){
-            for(Node& node : graph.viewNodeList()){
-                if(api.getInstance(node.viewEntity()).alive){
-                    editorState.game.currentNode = node.viewEntity();
-                    break;
-                }
-            }
-        }
-
-    }
-    if(editorState.config.lineForces)
-        graph.applyLineForces(forces);
-    if(editorState.config.nodeRepulsion)
-        graph.applyNodeRepulsion(forces);
-    if(editorState.config.centerAttraction)
-        graph.applyCenterAttraction(forces);
-    graph.update();
-
-    for(Node& node : graph.viewNodeList()){
-        if(node.data.type == NodeType::Goal){
-            node.data.value = editorState.game.points;
-        }
-    }
+void handleFinishTimer(ThING::API* api, float deltaTime, Graph* graph){
     static float secondCounter = 0;
     if(editorState.game.currentNode != INVALID_ENTITY){
-        if(graph.getNode(editorState.game.currentNode).data.type == NodeType::Goal && editorState.game.winTimer < 0 && editorState.game.loseTimer < 0){
-            Node& winNode = graph.getNode(editorState.game.currentNode);
+        if(graph->getNode(editorState.game.currentNode).data.type == NodeType::Goal && editorState.game.winTimer < 0 && editorState.game.loseTimer < 0){
+            Node& winNode = graph->getNode(editorState.game.currentNode);
             if(winNode.data.value >= 0){
-                api.playAudio(Style::Audio::Win);
+                api->playAudio(Style::Audio::Win);
                 secondCounter = 0;
                 editorState.game.winTimer = 1;
             } else {
-                api.playAudio(Style::Audio::Lose);
+                api->playAudio(Style::Audio::Lose);
                 secondCounter = 0;
                 editorState.game.loseTimer = 1;
             }
         }
     }
     if(editorState.game.winTimer > 0){
-        secondCounter += fps.getDeltaTime();
+        secondCounter += deltaTime;
         if(secondCounter >= 1){
             secondCounter = 0;
             editorState.game.winTimer--;
@@ -96,18 +51,18 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
                 stateMachine.getState() = StateM::MenuIdle;
                 editorState.game.currentNode = INVALID_ENTITY;
                 editorState.game.winTimer = -1;
-                loadLevel(api, "Menu");
+                loadLevel(*api, "Menu");
             }
         }
         return;
     }
     if(editorState.game.loseTimer > 0){
-        secondCounter += fps.getDeltaTime();
+        secondCounter += deltaTime;
         if(secondCounter >= 1){
             secondCounter = 0;
             editorState.game.loseTimer--;
             if(editorState.game.loseTimer <= 0){
-                loadLevel(api, editorState.game.gameLevelName);
+                loadLevel(*api, editorState.game.gameLevelName);
                 stateMachine.getState() = StateM::GameIdle;
                 editorState.game.points = 0;
                 editorState.game.currentNode = INVALID_ENTITY;
@@ -116,6 +71,49 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
         }
         return;
     }
+}
+
+void updateCallback(ThING::API& api, FPSCounter& fps){
+    static Graph& graph = *editorState.graph; 
+
+    api.getWindowSize(&editorState.windowData.size.width, &editorState.windowData.size.height);
+
+    if(!api.exists(editorState.game.currentNode)){
+        editorState.game.currentNode = INVALID_ENTITY;
+    }
+
+    if(editorState.game.currentNode == INVALID_ENTITY && graph.viewNodeList().size() > 0){
+        for(Node& node : graph.viewNodeList()){
+            if(api.getInstance(node.viewEntity()).alive){
+                if(graph.getNode(node.viewEntity()).data.type == NodeType::Start){
+                    editorState.game.currentNode = node.viewEntity();
+                    break;
+                }
+            }
+        }
+        if(editorState.game.currentNode == INVALID_ENTITY){
+            for(Node& node : graph.viewNodeList()){
+                if(api.getInstance(node.viewEntity()).alive){
+                    editorState.game.currentNode = node.viewEntity();
+                    graph.getNode(editorState.game.currentNode).setType(NodeType::Start);
+                    break;
+                }
+            }
+        }
+        
+    }
+
+    if(stateMachine.getState() != StateM::Menu){
+        graph.applyForces(forces, editorState.config.forceFlags);
+        graph.update();
+    }
+
+    for(Node& node : graph.viewNodeList()){
+        if(node.data.type == NodeType::Goal){
+            node.data.value = editorState.game.points;
+        }
+    }
+    handleFinishTimer(&api, fps.getDeltaTime(), &graph);    
 
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse){
@@ -130,12 +128,20 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
                 lastNode = editorState.game.currentNode;
                 switch (graph.getNode(lastNode).data.type) {
                     case NodeType::Bad:
-                        editorState.game.points--;
+                        if(graph.getNode(lastNode).data.value == 0){
+                            editorState.game.points--;
+                        } else {
+                            editorState.game.points -= graph.getNode(lastNode).data.value;
+                        }
                         break;
                     case NodeType::None:
                         break;
                     case NodeType::Good:
-                        editorState.game.points++;
+                        if(graph.getNode(lastNode).data.value == 0){
+                            editorState.game.points++;
+                        } else {
+                            editorState.game.points += graph.getNode(lastNode).data.value;
+                        }
                         graph.getNode(lastNode).data.type = NodeType::None;
                         graph.getNode(lastNode).data.baseColor = Style::Color::Node;
                         graph.getNode(lastNode).data.selectedColor = Style::Color::NodeSelected;
@@ -143,6 +149,8 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
                         break;
                     case NodeType::Goal:
                         //editorState.game.points += 100;
+                        break;
+                    case NodeType::Start:
                         break;
                     case NodeType::Count:
                         break;
@@ -192,5 +200,6 @@ int main(){
     api.setBackgroundColor(Style::Color::Background);
     api.setUpdateCallback(updateCallback);
     api.setUICallback(uiCallback);
+    imGuiInitialize();
     api.run();
 }

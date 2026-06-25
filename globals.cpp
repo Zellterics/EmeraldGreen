@@ -4,3 +4,4 @@
 EditorState editorState;
 Forces forces;
 StateMachine stateMachine;
+Zlog zlog;
