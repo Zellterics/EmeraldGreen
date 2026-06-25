@@ -90,14 +90,14 @@ void StateMachine::update(){
 
 void StateMachine::selectNode(){
     api->playAudio(Style::Audio::SelectNode);
-    api->getInstance(editorState->holdEntity).color = editorState->graph->getNode(editorState->holdEntity).data.selectedColor;
+    api->getInstance(editorState->holdEntity).color = editorState->getHoldNode().data.selectedColor;
     glm::vec2 scale = {Style::NodeSize + Style::NodeSelectedPadding, Style::NodeSize + Style::NodeSelectedPadding};
     api->getInstance(editorState->holdEntity).scale = scale;
 }
 
 void StateMachine::deselectNode(){
     api->playAudio(Style::Audio::ReleaseNode);
-    api->getInstance(editorState->holdEntity).color = editorState->graph->getNode(editorState->holdEntity).data.baseColor;
+    api->getInstance(editorState->holdEntity).color = editorState->getHoldNode().data.baseColor;
     api->getInstance(editorState->holdEntity).scale = {Style::NodeSize, Style::NodeSize};
 }
 
@@ -110,7 +110,7 @@ void StateMachine::idle(){
     editorState->holdEntity = INVALID_ENTITY;
     if(ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
         editorState->holdEntity = hitEntity(*api, editorState->windowData);
-        if(editorState->holdEntity != INVALID_ENTITY){
+        if(editorState->holdEntity.valid()){
             selectNode();
         }
         currentState = StateM::WaitLeftIdle;
@@ -118,7 +118,7 @@ void StateMachine::idle(){
     }
     if(ImGui::IsMouseClicked(ImGuiMouseButton_Right)){
         editorState->holdEntity = hitEntity(*api, editorState->windowData);
-        if(editorState->holdEntity != INVALID_ENTITY){
+        if(editorState->holdEntity.valid()){
             selectNode();
         }
         currentState = StateM::WaitRightIdle;
@@ -139,13 +139,13 @@ void StateMachine::idle(){
 void StateMachine::waitLeftIdle(){
     if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
         static int i = 0;
-        if(editorState->holdEntity != INVALID_ENTITY){
+        if(editorState->holdEntity.valid()){
             if(editorState->game.currentNode == editorState->holdEntity){
                 deselectNode();
                 currentState = StateM::Idle;
                 return;
             }
-            Node& node = editorState->graph->getNode(editorState->holdEntity);
+            Node& node = editorState->getHoldNode();
             NodeType newNodeType = static_cast<NodeType>((static_cast<int>(node.data.type) + 1));
             if(newNodeType == NodeType::Count || newNodeType == NodeType::Start){
                 node.setType(static_cast<NodeType>(0));
@@ -156,7 +156,7 @@ void StateMachine::waitLeftIdle(){
             currentState = StateM::Idle;
             return;
         }
-        if(hitEntity(*api, editorState->windowData, Style::NodeSize + Style::OutlineWidth) == INVALID_ENTITY){
+        if(!hitEntity(*api, editorState->windowData, Style::NodeSize + Style::OutlineWidth).valid()){
             api->playAudio(Style::Audio::ReleaseNode);
             Entity e = editorState->graph->addNode(mousePosition(editorState->windowData));
             editorState->graph->getNode(e).data.value = 0;
@@ -165,7 +165,7 @@ void StateMachine::waitLeftIdle(){
         return;
     }
     if(ImGui::IsMouseDragging(ImGuiMouseButton_Left, Style::LockDragging)){
-        if(editorState->holdEntity == INVALID_ENTITY){
+        if(!editorState->holdEntity.valid()){
             returnState = StateM::Idle;
             currentState = StateM::PanningCamera;
             return;
@@ -176,9 +176,9 @@ void StateMachine::waitLeftIdle(){
 
 void StateMachine::waitRightIdle(){
     if(ImGui::IsMouseReleased(ImGuiMouseButton_Right)){
-        if(editorState->holdEntity != INVALID_ENTITY){
+        if(editorState->holdEntity.valid()){
             api->playAudio(Style::Audio::OpenUi);
-            api->getInstance(editorState->holdEntity).color = editorState->graph->getNode(editorState->holdEntity).data.baseColor;
+            api->getInstance(editorState->holdEntity).color = editorState->getHoldNode().data.baseColor;
             api->getInstance(editorState->holdEntity).scale = {Style::NodeSize, Style::NodeSize};
             editorState->openedWindows[editorState->holdEntity] = true;
         }
@@ -186,11 +186,11 @@ void StateMachine::waitRightIdle(){
         return;
     }
     if(ImGui::IsMouseDragging(ImGuiMouseButton_Right)){
-        if(editorState->holdEntity == INVALID_ENTITY){
+        if(!editorState->holdEntity.valid()){
             currentState = StateM::DraggingRight;
             return;
         }
-        if(editorState->graph->getNode(editorState->holdEntity).data.tags.noMove){
+        if(editorState->getHoldNode().data.tags.noMove){
             deselectNode();
             editorState->holdEntity = INVALID_ENTITY;
             currentState = StateM::DraggingRight;
@@ -202,14 +202,14 @@ void StateMachine::waitRightIdle(){
 
 void StateMachine::dragginLine(){
     if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
-        if(editorState->tempLine == INVALID_ENTITY){
+        if(!editorState->tempLine.valid()){
             currentState = StateM::Idle;
             return;
         }
-        api->getInstance(editorState->holdEntity).color = editorState->graph->getNode(editorState->holdEntity).data.baseColor;
+        api->getInstance(editorState->holdEntity).color = editorState->getHoldNode().data.baseColor;
         api->getInstance(editorState->holdEntity).scale = {Style::NodeSize, Style::NodeSize};
         Entity e = hitEntity(*api, editorState->windowData, api->getLine(editorState->tempLine).point2);
-        if(e != INVALID_ENTITY){
+        if(e.valid()){
             if(editorState->holdEntity == e){
                 api->playAudio(Style::Audio::ReleaseNode);
             } else if (editorState->graph->connect(editorState->holdEntity, e)){
@@ -225,7 +225,7 @@ void StateMachine::dragginLine(){
         currentState = StateM::Idle;
         return;
     }
-    if(editorState->tempLine == INVALID_ENTITY){
+    if(!editorState->tempLine.valid()){
         editorState->tempLine = api->addLine(api->getInstance(editorState->holdEntity).position, 
             mousePosition(editorState->windowData), Style::LineWidth);
         api->getLine(editorState->tempLine).color = Style::Color::TempLine;
@@ -334,12 +334,12 @@ void StateMachine::gameIdle(){
     editorState->holdEntity = INVALID_ENTITY;
     if(ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
         editorState->holdEntity = hitEntity(*api, editorState->windowData, 10.f);
-        if(editorState->holdEntity != INVALID_ENTITY && editorState->game.currentNode != INVALID_ENTITY){
-            for(Link& link : editorState->graph->getNode(editorState->game.currentNode).links){
+        if(editorState->holdEntity.valid() && editorState->game.currentNode.valid()){
+            for(Link& link : editorState->getCurrentNode().links){
                 if(link.viewConnection() == editorState->holdEntity){
                     // Here you can detect the type node to play different sounds
                     api->playAudio(Style::Audio::SelectNode);
-                    api->getInstance(editorState->game.currentNode).color = editorState->graph->getNode(editorState->game.currentNode).data.baseColor;
+                    api->getInstance(editorState->game.currentNode).color = editorState->getCurrentNode().data.baseColor;
                     api->getInstance(editorState->game.currentNode).scale = {Style::NodeSize, Style::NodeSize};
                     editorState->game.currentNode = editorState->holdEntity;
                     currentState = StateM::GameWaitLeftIdle;
@@ -357,7 +357,7 @@ void StateMachine::gameIdle(){
         return;
     }
     if(ImGui::IsMouseClicked(ImGuiMouseButton_Middle)){
-        if(editorState->game.currentNode == INVALID_ENTITY){
+        if(!editorState->game.currentNode.valid()){
             currentState = StateM::Idle;
             return;
         }
@@ -412,11 +412,11 @@ void StateMachine::menuIdle(){
     editorState->holdEntity = INVALID_ENTITY;
     if(ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
         editorState->holdEntity = hitEntity(*api, editorState->windowData, 10.f);
-        if(editorState->holdEntity != INVALID_ENTITY && editorState->game.currentNode != INVALID_ENTITY){
-            for(Link& link : editorState->graph->getNode(editorState->game.currentNode).links){
+        if(editorState->holdEntity.valid() && editorState->game.currentNode.valid()){
+            for(Link& link : editorState->getCurrentNode().links){
                 if(link.viewConnection() == editorState->holdEntity){
                     api->playAudio(Style::Audio::SelectNode);
-                    api->getInstance(editorState->game.currentNode).color = editorState->graph->getNode(editorState->game.currentNode).data.baseColor;
+                    api->getInstance(editorState->game.currentNode).color = editorState->getCurrentNode().data.baseColor;
                     api->getInstance(editorState->game.currentNode).scale = {Style::NodeSize, Style::NodeSize};
                     editorState->game.currentNode = editorState->holdEntity;
                     currentState = StateM::MenuIdle;

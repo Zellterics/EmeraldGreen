@@ -19,8 +19,8 @@ enum class StateM{
 
     GameIdle,
     GameWaitLeftIdle,
-    GameWaitRightIdle, // Make just one version with parammeters (StateM returnState) to go back to the respectibe IdleStage Same witg Menu
-    GameDraggingRight, // if returnState == GameIdle; menuWindow(api, resume = true); for resume option
+    GameWaitRightIdle, // Make just one version with parameters (StateM returnState) to go back to the respective IdleStage Same witg Menu
+    GameDraggingRight, // if returnState == GameIdle; menuWindow(api, resume = true); for resume option [I don't remember what this means]
 
     MenuIdle,
 

@@ -1,6 +1,6 @@
 #include "editor.h"
 #include "../globals.h"
-#include "../external/json.hpp"
+#include "../../external/json.hpp"
 #include "ThING/types/enums.h"
 #include "imgui.h"
 #include "imgui_internal.h"

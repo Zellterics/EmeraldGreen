@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <source_location>
 
 /*
 C++23 header only light app logger
@@ -68,6 +69,8 @@ public:
     template<typename... _Args>
     inline void debug(std::format_string<_Args...> fmt, _Args&&... _args){ baseLog("DEBG", fmt, std::forward<_Args>(_args)...); }
     inline void debug(std::string_view str){ baseLog("DEBG", "{}", str); }
+
+    inline static const char* location(const char* location = std::source_location::current().function_name()){return location;}
 private:
     template<typename... _Args>
     inline void baseLog(std::string_view type, std::format_string<_Args...> fmt, _Args&&... __args){

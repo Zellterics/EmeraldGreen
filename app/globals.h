@@ -3,10 +3,11 @@
 #include "auxiliar/style.h"
 #include "graph/graph.h"
 #include "auxiliar/window.h"
+#include "graph/node.h"
 #include "imgui.h"
 #include <cstdint>
 
-#include "./external/zlog.h"
+#include "../external/zlog.h"
 
 struct GameState{
     int points = 0;
@@ -48,10 +49,20 @@ struct EditorState{
     Node& getCurrentNode(){
         if(graph == nullptr || game.currentNode == INVALID_ENTITY){
             static Node nullNode(INVALID_ENTITY);
-            zlog.warn("EditorState.getCurrentNode returned nullNode");
+            zlog.warn("In {} -> returned nullNode", Zlog::location());
+            
             return nullNode;
         }
         return graph->getNode(game.currentNode);
+    }
+    Node& getHoldNode(){
+        if(graph == nullptr || game.currentNode == INVALID_ENTITY){
+            static Node nullNode(INVALID_ENTITY);
+            zlog.warn("In {} -> returned nullNode", Zlog::location());
+
+            return nullNode;
+        }
+        return graph->getNode(holdEntity);
     }
 };
 

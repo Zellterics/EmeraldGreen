@@ -15,13 +15,10 @@ add_subdirectory(ThING-Engine)
 target_compile_definitions(ThING PUBLIC $<$<CONFIG:Debug>:DEBUG>)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-    graph/*.cpp
-    auxiliar/*.cpp
-    stateMachine/*.cpp
+    app/*.cpp
 )
 
 add_executable(test 
-    globals.cpp
     main.cpp
     ${SOURCES}
 )
