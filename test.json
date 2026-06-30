@@ -9,50 +9,60 @@
             "Alive": 1,
             "ID": 0,
             "Links": [
-                1,
-                2
+                {
+                    "active": true,
+                    "targetID": 5
+                }
             ],
             "Position": {
-                "x": -72.09490966796875,
-                "y": -66.71029663085938
+                "x": -72.26194763183594,
+                "y": 102.40277862548828
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 0,
+            "Type": 5,
             "Value": 0
         },
         {
             "Alive": 1,
             "ID": 1,
             "Links": [
-                4,
-                8,
-                9
+                {
+                    "active": true,
+                    "targetID": 3
+                },
+                {
+                    "active": false,
+                    "targetID": 2
+                }
             ],
             "Position": {
-                "x": 34.3994255065918,
-                "y": -41.73813247680664
+                "x": 66.14762115478516,
+                "y": 18.154455184936523
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 1,
+            "Type": 4,
             "Value": 0
         },
         {
             "Alive": 1,
             "ID": 2,
             "Links": [
-                3
+                {
+                    "active": true,
+                    "targetID": 5
+                }
             ],
             "Position": {
-                "x": -155.42286682128906,
-                "y": -9.32809829711914
+                "x": 32.900856018066406,
+                "y": 107.47731018066406
             },
             "Tags": {
                 "noDelete": false,
@@ -65,49 +75,34 @@
         {
             "Alive": 1,
             "ID": 3,
-            "Links": [
-                5,
-                8
-            ],
             "Position": {
-                "x": -106.00790405273438,
-                "y": 84.65412139892578
+                "x": 160.47897338867188,
+                "y": 45.6163444519043
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 1,
+            "Type": 3,
             "Value": 0
         },
         {
             "Alive": 1,
             "ID": 4,
             "Links": [
-                6
+                {
+                    "active": true,
+                    "targetID": 1
+                },
+                {
+                    "active": true,
+                    "targetID": 5
+                }
             ],
             "Position": {
-                "x": 112.91604614257813,
-                "y": -110.19912719726563
-            },
-            "Tags": {
-                "noDelete": false,
-                "noMove": false,
-                "noUpdate": false
-            },
-            "Type": 2,
-            "Value": 0
-        },
-        {
-            "Alive": 1,
-            "ID": 5,
-            "Links": [
-                7
-            ],
-            "Position": {
-                "x": -19.446094512939453,
-                "y": 148.9244842529297
+                "x": 82.31780242919922,
+                "y": -73.85798645019531
             },
             "Tags": {
                 "noDelete": false,
@@ -119,13 +114,45 @@
         },
         {
             "Alive": 1,
-            "ID": 6,
+            "ID": 5,
             "Links": [
-                1
+                {
+                    "active": false,
+                    "targetID": 1
+                },
+                {
+                    "active": false,
+                    "targetID": 6
+                },
+                {
+                    "active": true,
+                    "targetID": 8
+                }
             ],
             "Position": {
-                "x": 11.351845741271973,
-                "y": -146.66845703125
+                "x": -24.48001480102539,
+                "y": -3.40058970451355
+            },
+            "Tags": {
+                "noDelete": false,
+                "noMove": false,
+                "noUpdate": false
+            },
+            "Type": 4,
+            "Value": 0
+        },
+        {
+            "Alive": 1,
+            "ID": 6,
+            "Links": [
+                {
+                    "active": true,
+                    "targetID": 7
+                }
+            ],
+            "Position": {
+                "x": -106.3033676147461,
+                "y": -83.81884002685547
             },
             "Tags": {
                 "noDelete": false,
@@ -138,45 +165,36 @@
         {
             "Alive": 1,
             "ID": 7,
+            "Links": [
+                {
+                    "active": true,
+                    "targetID": 5
+                }
+            ],
             "Position": {
-                "x": 74.76535034179688,
-                "y": 103.27037048339844
+                "x": -135.23583984375,
+                "y": 12.037960052490234
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 3,
+            "Type": 0,
             "Value": 0
         },
         {
             "Alive": 1,
             "ID": 8,
             "Links": [
-                0
+                {
+                    "active": true,
+                    "targetID": 4
+                }
             ],
             "Position": {
-                "x": -24.297119140625,
-                "y": 27.03009605407715
-            },
-            "Tags": {
-                "noDelete": false,
-                "noMove": false,
-                "noUpdate": false
-            },
-            "Type": 2,
-            "Value": 0
-        },
-        {
-            "Alive": 1,
-            "ID": 9,
-            "Links": [
-                7
-            ],
-            "Position": {
-                "x": 123.34024047851563,
-                "y": 14.857854843139648
+                "x": -3.9350221157073975,
+                "y": -115.7967300415039
             },
             "Tags": {
                 "noDelete": false,

@@ -17,4 +17,6 @@ int main(){
     api.setUICallback(uiCallback);
     imGuiInitialize();
     api.run();
-}
+}// MAKE BAU BAU HAPPY, WHEN RESET KEEP NODE POSITION THE SAME
+// Make pickPhysical device use the best graphics card not just the available
+// Still bad in integrated, optimize further the outline shader

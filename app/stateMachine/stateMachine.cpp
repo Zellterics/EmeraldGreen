@@ -5,6 +5,8 @@
 #include "ThING/types/apiTypes.h"
 #include "glm/fwd.hpp"
 #include "imgui.h"
+#include <string>
+#include "../auxiliar/persistence.h"
 
 StateMachine::StateMachine(){
     currentState = StateM::Idle;
@@ -213,7 +215,7 @@ void StateMachine::dragginLine(){
             if(editorState->holdEntity == e){
                 api->playAudio(Style::Audio::ReleaseNode);
             } else if (editorState->graph->connect(editorState->holdEntity, e)){
-                api->playAudio(Style::Audio::ConnectNode, 150);
+                api->playAudio(Style::Audio::ConnectNode, 150); // USE MASTEER VOLUME
             } else {
                 api->playAudio(Style::Audio::DisconnectNode, 150);
             }
@@ -334,20 +336,24 @@ void StateMachine::gameIdle(){
     editorState->holdEntity = INVALID_ENTITY;
     if(ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
         editorState->holdEntity = hitEntity(*api, editorState->windowData, 10.f);
-        if(editorState->holdEntity.valid() && editorState->game.currentNode.valid()){
-            for(Link& link : editorState->getCurrentNode().links){
-                if(link.viewConnection() == editorState->holdEntity){
-                    // Here you can detect the type node to play different sounds
-                    api->playAudio(Style::Audio::SelectNode);
-                    api->getInstance(editorState->game.currentNode).color = editorState->getCurrentNode().data.baseColor;
-                    api->getInstance(editorState->game.currentNode).scale = {Style::NodeSize, Style::NodeSize};
-                    editorState->game.currentNode = editorState->holdEntity;
-                    currentState = StateM::GameWaitLeftIdle;
-                    return;
-                }
-            }
-            api->playAudio(Style::Audio::ReleaseNode);
+        if(!(editorState->holdEntity.valid() && editorState->game.currentNode.valid())){
+            currentState = StateM::GameWaitLeftIdle;
+            return;
         }
+        for(Link& link : editorState->getCurrentNode().links){
+            if(link.viewConnection() != editorState->holdEntity || !link.active){
+                continue;
+            }
+            // Here you can detect the type node to play different sounds
+            api->playAudio(Style::Audio::SelectNode);
+            api->getInstance(editorState->game.currentNode).color = editorState->getCurrentNode().data.baseColor;
+            api->getInstance(editorState->game.currentNode).scale = {Style::NodeSize, Style::NodeSize};
+            editorState->game.currentNode = editorState->holdEntity;
+            currentState = StateM::GameWaitLeftIdle;
+            return;
+        }
+        api->playAudio(Style::Audio::ReleaseNode);
+        
         currentState = StateM::GameWaitLeftIdle;
         return;
     }
@@ -363,6 +369,9 @@ void StateMachine::gameIdle(){
         }
         editorState->game.points = 0;
         api->getInstance(editorState->game.currentNode).color = editorState->getCurrentNode().data.baseColor;
+        api->getInstance(editorState->game.currentNode).outlineColor = Style::Color::Outline;
+        api->getInstance(editorState->game.currentNode).objectID = 1;
+        api->updateOutlines(); // This can be optimize as updateOutline is only needed when a new objectID is used
         editorState->game.currentNode = INVALID_ENTITY;
         currentState = StateM::Idle;
         return;
@@ -412,21 +421,32 @@ void StateMachine::menuIdle(){
     editorState->holdEntity = INVALID_ENTITY;
     if(ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
         editorState->holdEntity = hitEntity(*api, editorState->windowData, 10.f);
-        if(editorState->holdEntity.valid() && editorState->game.currentNode.valid()){
-            for(Link& link : editorState->getCurrentNode().links){
-                if(link.viewConnection() == editorState->holdEntity){
-                    api->playAudio(Style::Audio::SelectNode);
-                    api->getInstance(editorState->game.currentNode).color = editorState->getCurrentNode().data.baseColor;
-                    api->getInstance(editorState->game.currentNode).scale = {Style::NodeSize, Style::NodeSize};
-                    editorState->game.currentNode = editorState->holdEntity;
-                    currentState = StateM::MenuIdle;
-                    return;
-                }
-            }
-            api->playAudio(Style::Audio::ReleaseNode);
+        if(!(editorState->holdEntity.valid() && editorState->game.currentNode.valid())){
+            returnState = StateM::MenuIdle;
+            currentState = StateM::PanningCamera;
+            return;
         }
-        returnState = StateM::MenuIdle;
-        currentState = StateM::PanningCamera;
+        if(editorState->getHoldNode().data.type == NodeType::Bad){
+            api->playAudio(Style::Audio::ReleaseNode);
+            return;
+        }
+        for(Link& link : editorState->getCurrentNode().links){
+            if(!(link.viewConnection() == editorState->holdEntity)){
+                continue;
+            }
+            api->playAudio(Style::Audio::SelectNode);
+            api->getInstance(editorState->game.currentNode).color = editorState->getCurrentNode().data.baseColor;
+            api->getInstance(editorState->game.currentNode).scale = {Style::NodeSize, Style::NodeSize};
+            editorState->game.currentNode = editorState->holdEntity;
+            currentState = StateM::MenuIdle;
+            return;
+        }
+        if(editorState->getHoldNode() == editorState->getCurrentNode()){
+            editorState->game.level = editorState->game.currentNode.index;
+            if(loadLevel(*api, std::to_string(editorState->game.currentNode.index))){
+                currentState = StateM::GameIdle;
+            }
+        }
         return;
     }
 }

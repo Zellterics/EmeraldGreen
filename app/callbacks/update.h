@@ -3,7 +3,7 @@
 
 void updateCallback(ThING::API& api, FPSCounter& fps);
 
-void handleFinishTimer(ThING::API* api, float deltaTime);
+void handleFinishTimer(ThING::API& api, float deltaTime);
 void selectCurrentNode(ThING::API& api);
 void updateGraph();
 void navigationLogic(ThING::API& api);

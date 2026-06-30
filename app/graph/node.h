@@ -10,6 +10,7 @@ enum class NodeType{
     Bad,
     Good,
     Goal,
+    Switch,
     Start,
     Count
 };
@@ -60,6 +61,11 @@ public:
                 data.selectedColor = Style::Color::NodeGoalSelected;
                 data.type = NodeType::Goal;
                 break;
+            case NodeType::Switch:
+                data.baseColor = Style::Color::NodeSwitch;
+                data.selectedColor = Style::Color::NodeSwitchSelected;
+                data.type = NodeType::Switch;
+                break;
             case NodeType::Start:
                 data.baseColor = Style::Color::Node;
                 data.selectedColor = Style::Color::NodeSelected;
@@ -75,6 +81,14 @@ public:
     void connect(Entity other, Entity line){links.emplace_back(other, line);}
     Entity viewEntity() const {return circle;}
     NodeData data;
+
+    bool operator==(const Node& other) const {
+        if(other.viewEntity() == this->viewEntity()){
+            return true;
+        }
+        return false;
+    }
+
 private:
     Entity circle;
 };

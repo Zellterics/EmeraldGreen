@@ -71,9 +71,10 @@ void nodeWindows(ThING::API& api){
                 ImGui::RadioButton("Bad", &newChoice, 1);
                 ImGui::RadioButton("Good", &newChoice, 2);
                 ImGui::RadioButton("Goal", &newChoice, 3);
-                ImGui::RadioButton("Start", &newChoice, 4);
+                ImGui::RadioButton("Switch", &newChoice, 4);
+                ImGui::RadioButton("Start", &newChoice, 5);
                 if(lastChoice != newChoice){
-                    if(lastChoice == 4){
+                    if(lastChoice == static_cast<int>(NodeType::Start)){
                         api.playAudio(Style::Audio::UnCheck);
                     } else {
                         if(newChoice < lastChoice){
@@ -83,7 +84,7 @@ void nodeWindows(ThING::API& api){
                             api.playAudio(Style::Audio::Check);
                         }
                         graph.getNode(e).setType(static_cast<NodeType>(newChoice));
-                        if(newChoice == 4){
+                        if(newChoice == static_cast<int>(NodeType::Start)){
                             graph.getNode(editorState.game.currentNode).setType(NodeType::None);
                             api.getInstance(editorState.game.currentNode).color = Style::Color::Node;
                             editorState.game.currentNode = e;
@@ -114,6 +115,22 @@ void nodeWindows(ThING::API& api){
                         api.playAudio(Style::Audio::DisconnectNode);
                         ImGui::ClearActiveID();
                     }
+                }
+                if(openTree(api, "Lines")){
+                    for(Link& link : graph.getNode(e).links){
+                        bool state = link.active;
+                        ImGui::Checkbox(("Line " + std::to_string(link.viewLine().index)).c_str(), &link.active);
+                        if(state > link.active){
+                            api.getInstance(link.viewLine()).color = Style::Color::InnactiveLine;
+                            api.playAudio(Style::Audio::UnCheck);
+                        }
+                        if(state < link.active){
+                            api.getInstance(link.viewLine()).color = Style::Color::Line;
+                            api.playAudio(Style::Audio::Check);
+                        }
+
+                    }
+                    ImGui::TreePop();
                 }
                 ImGui::TreePop();
             }
@@ -242,7 +259,8 @@ void menuWindow(ThING::API &api){
 
     centerX();
     if (ImGui::Button("Menu", buttonSize)) {
-        loadLevel(api, "Menu");
+        editorState.game.level = -1;
+        loadMenu(api);
         firstFrame = true;
         stateMachine.getState() = StateM::MenuIdle;
     }

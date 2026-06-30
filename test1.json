@@ -6,29 +6,25 @@
     "NodeRepulsionRadius": 150.0,
     "nodes": [
         {
-            "Alive": 1,
+            "Alive": 0,
             "ID": 0,
             "Links": [
                 {
                     "active": true,
-                    "targetID": 1
-                },
-                {
-                    "active": true,
-                    "targetID": 2
+                    "targetID": 5
                 }
             ],
             "Position": {
-                "x": 27.870527267456055,
-                "y": -14.458211898803711
+                "x": -3.326897542638551e-35,
+                "y": 2.5018698300573467e-34
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 5,
-            "Value": 0
+            "Type": 0,
+            "Value": 1
         },
         {
             "Alive": 1,
@@ -36,28 +32,24 @@
             "Links": [
                 {
                     "active": true,
-                    "targetID": 8
+                    "targetID": 3
                 },
                 {
-                    "active": true,
-                    "targetID": 7
-                },
-                {
-                    "active": true,
-                    "targetID": 4
+                    "active": false,
+                    "targetID": 2
                 }
             ],
             "Position": {
-                "x": -55.464115142822266,
-                "y": 29.84804344177246
+                "x": 24.443405151367188,
+                "y": 87.6735610961914
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 1,
-            "Value": 0
+            "Type": 4,
+            "Value": 8
         },
         {
             "Alive": 1,
@@ -65,50 +57,44 @@
             "Links": [
                 {
                     "active": true,
-                    "targetID": 6
-                },
-                {
-                    "active": true,
-                    "targetID": 8
+                    "targetID": 5
                 }
             ],
             "Position": {
-                "x": 20.0103816986084,
-                "y": -124.36863708496094
+                "x": -76.66421508789063,
+                "y": 90.84989929199219
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 1,
-            "Value": 0
+            "Type": 2,
+            "Value": 6
         },
         {
             "Alive": 1,
             "ID": 3,
-            "Links": [
-                {
-                    "active": true,
-                    "targetID": 1
-                }
-            ],
             "Position": {
-                "x": -115.85982513427734,
-                "y": 113.48383331298828
+                "x": 128.5500030517578,
+                "y": 86.17002868652344
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 1,
+            "Type": 3,
             "Value": 0
         },
         {
             "Alive": 1,
             "ID": 4,
             "Links": [
+                {
+                    "active": true,
+                    "targetID": 1
+                },
                 {
                     "active": true,
                     "targetID": 5
@@ -119,8 +105,8 @@
                 }
             ],
             "Position": {
-                "x": -10.685097694396973,
-                "y": 127.83769226074219
+                "x": 85.15365600585938,
+                "y": -6.778112411499023
             },
             "Tags": {
                 "noDelete": false,
@@ -128,32 +114,36 @@
                 "noUpdate": false
             },
             "Type": 1,
-            "Value": 0
+            "Value": 3
         },
         {
             "Alive": 1,
             "ID": 5,
             "Links": [
                 {
-                    "active": true,
-                    "targetID": 0
+                    "active": false,
+                    "targetID": 1
+                },
+                {
+                    "active": false,
+                    "targetID": 6
                 },
                 {
                     "active": true,
-                    "targetID": 9
+                    "targetID": 8
                 }
             ],
             "Position": {
-                "x": 79.46199035644531,
-                "y": 83.70225524902344
+                "x": -21.515838623046875,
+                "y": -9.824132919311523
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 1,
-            "Value": 0
+            "Type": 4,
+            "Value": 2
         },
         {
             "Alive": 1,
@@ -161,20 +151,20 @@
             "Links": [
                 {
                     "active": true,
-                    "targetID": 9
+                    "targetID": 7
                 }
             ],
             "Position": {
-                "x": 122.44754791259766,
-                "y": -106.5643539428711
+                "x": -70.83492279052734,
+                "y": -108.78675842285156
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 1,
-            "Value": 0
+            "Type": 2,
+            "Value": 5
         },
         {
             "Alive": 1,
@@ -182,20 +172,20 @@
             "Links": [
                 {
                     "active": true,
-                    "targetID": 8
+                    "targetID": 5
                 }
             ],
             "Position": {
-                "x": -150.72927856445313,
-                "y": -18.54872703552246
+                "x": -129.68331909179688,
+                "y": -20.55606460571289
             },
             "Tags": {
                 "noDelete": false,
                 "noMove": false,
                 "noUpdate": false
             },
-            "Type": 1,
-            "Value": 0
+            "Type": 5,
+            "Value": 4
         },
         {
             "Alive": 1,
@@ -203,12 +193,12 @@
             "Links": [
                 {
                     "active": true,
-                    "targetID": 0
+                    "targetID": 4
                 }
             ],
             "Position": {
-                "x": -65.34097290039063,
-                "y": -75.89067840576172
+                "x": 50.297096252441406,
+                "y": -101.05335235595703
             },
             "Tags": {
                 "noDelete": false,
@@ -216,28 +206,7 @@
                 "noUpdate": false
             },
             "Type": 1,
-            "Value": 0
-        },
-        {
-            "Alive": 1,
-            "ID": 9,
-            "Links": [
-                {
-                    "active": true,
-                    "targetID": 0
-                }
-            ],
-            "Position": {
-                "x": 133.58218383789063,
-                "y": -2.2745723724365234
-            },
-            "Tags": {
-                "noDelete": false,
-                "noMove": false,
-                "noUpdate": false
-            },
-            "Type": 1,
-            "Value": 0
+            "Value": 7
         }
     ]
 }

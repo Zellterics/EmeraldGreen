@@ -2,6 +2,7 @@
 #include "../globals.h"
 #include "../stateMachine/stateMachine.h"
 #include "../auxiliar/persistence.h"
+#include "imgui.h"
 
 void updateCallback(ThING::API& api, FPSCounter& fps){
     static Graph& graph = *editorState.graph; 
@@ -16,7 +17,11 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
 
     updateGraph();
 
-    handleFinishTimer(&api, fps.getDeltaTime());    
+    handleFinishTimer(api, fps.getDeltaTime());    
+
+    if(ImGui::IsKeyPressed(ImGuiKey_R)){
+        restartLevel(api);
+    }
 
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse){
@@ -26,17 +31,17 @@ void updateCallback(ThING::API& api, FPSCounter& fps){
     navigationLogic(api);
 }
 
-void handleFinishTimer(ThING::API* api, float deltaTime){
+void handleFinishTimer(ThING::API& api, float deltaTime){
     static float secondCounter = 0;
     if(editorState.game.currentNode.valid()){
         if(editorState.graph->getNode(editorState.game.currentNode).data.type == NodeType::Goal && editorState.game.winTimer < 0 && editorState.game.loseTimer < 0){
             Node& winNode = editorState.graph->getNode(editorState.game.currentNode);
             if(winNode.data.value >= 0){
-                api->playAudio(Style::Audio::Win);
+                api.playAudio(Style::Audio::Win);
                 secondCounter = 0;
                 editorState.game.winTimer = 1;
             } else {
-                api->playAudio(Style::Audio::Lose);
+                api.playAudio(Style::Audio::Lose);
                 secondCounter = 0;
                 editorState.game.loseTimer = 1;
             }
@@ -51,7 +56,7 @@ void handleFinishTimer(ThING::API* api, float deltaTime){
                 stateMachine.getState() = StateM::MenuIdle;
                 editorState.game.currentNode = INVALID_ENTITY;
                 editorState.game.winTimer = -1;
-                loadLevel(*api, "Menu");
+                loadMenu(api);
             }
         }
         return;
@@ -62,11 +67,7 @@ void handleFinishTimer(ThING::API* api, float deltaTime){
             secondCounter = 0;
             editorState.game.loseTimer--;
             if(editorState.game.loseTimer <= 0){
-                loadLevel(*api, editorState.game.gameLevelName);
-                stateMachine.getState() = StateM::GameIdle;
-                editorState.game.points = 0;
-                editorState.game.currentNode = INVALID_ENTITY;
-                editorState.game.loseTimer = -1;
+                restartLevel(api);
             }
         }
         return;
@@ -80,6 +81,9 @@ void selectCurrentNode(ThING::API& api){
             if(api.getInstance(node.viewEntity()).alive){
                 if(graph.getNode(node.viewEntity()).data.type == NodeType::Start){
                     editorState.game.currentNode = node.viewEntity();
+                    api.getInstance(editorState.game.currentNode).outlineColor = Style::Color::NodeSelectedOutline;
+                    api.getInstance(editorState.game.currentNode).objectID = 2;
+                    api.updateOutlines();
                     break;
                 }
             }
@@ -89,6 +93,9 @@ void selectCurrentNode(ThING::API& api){
                 if(api.getInstance(node.viewEntity()).alive){
                     editorState.game.currentNode = node.viewEntity();
                     graph.getNode(editorState.game.currentNode).setType(NodeType::Start);
+                    api.getInstance(editorState.game.currentNode).outlineColor = Style::Color::NodeSelectedOutline;
+                    api.getInstance(editorState.game.currentNode).objectID = 2;
+                    api.updateOutlines();
                     break;
                 }
             }
@@ -118,13 +125,16 @@ void navigationLogic(ThING::API& api){
             lastNode = editorState.game.currentNode;
         }
         if(lastNode != editorState.game.currentNode){
+            api.getInstance(lastNode).outlineColor = Style::Color::Outline;
+            api.getInstance(lastNode).objectID = 1;
             lastNode = editorState.game.currentNode;
             switch (graph.getNode(lastNode).data.type) {
                 case NodeType::Bad:
                     if(graph.getNode(lastNode).data.value == 0){
                         editorState.game.points--;
                     } else {
-                        editorState.game.points -= graph.getNode(lastNode).data.value;
+                        //editorState.game.points -= graph.getNode(lastNode).data.value;
+                        editorState.game.points--;
                     }
                     break;
                 case NodeType::None:
@@ -133,13 +143,27 @@ void navigationLogic(ThING::API& api){
                     if(graph.getNode(lastNode).data.value == 0){
                         editorState.game.points++;
                     } else {
-                        editorState.game.points += graph.getNode(lastNode).data.value;
+                        //editorState.game.points += graph.getNode(lastNode).data.value;
+                        editorState.game.points++;
                     }
                     graph.getNode(lastNode).setType(NodeType::None);
                     api.getInstance(lastNode).color = Style::Color::NodeSelected;
                     break;
                 case NodeType::Goal:
                     //editorState.game.points += 100;
+                    break;
+                case NodeType::Switch:
+                    for(Link& link : editorState.getCurrentNode().links){
+                        if(link.active){
+                            link.active = false;
+                            api.getInstance(link.viewLine()).color = Style::Color::InnactiveLine;
+                            api.playAudio(Style::Audio::UnCheck);
+                        } else {
+                            link.active = true;
+                            api.getInstance(link.viewLine()).color = Style::Color::Line;
+                            api.playAudio(Style::Audio::Check);
+                        }
+                    }
                     break;
                 case NodeType::Start:
                     break;
@@ -148,6 +172,9 @@ void navigationLogic(ThING::API& api){
             }
         }
         api.getInstance(editorState.game.currentNode).color = graph.getNode(editorState.game.currentNode).data.selectedColor;
+        api.getInstance(editorState.game.currentNode).outlineColor = Style::Color::NodeSelectedOutline;
+        api.getInstance(editorState.game.currentNode).objectID = 2;
+        api.updateOutlines();
         glm::vec2 size = {Style::NodeSize + Style::NodeSelectedPadding, Style::NodeSize + Style::NodeSelectedPadding};
         api.getInstance(editorState.game.currentNode).scale = size;
     } else {

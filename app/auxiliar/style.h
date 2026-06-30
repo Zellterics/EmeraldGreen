@@ -22,6 +22,7 @@ namespace Style {
         constexpr glm::vec4 Outline = {.2f, .2f, .2f, 1.f};
         constexpr glm::vec4 Line = {.1f, .1f, .1f, 1.f};
         constexpr glm::vec4 TempLine = {.15f, .15f, .15f, 1.f};
+        constexpr glm::vec4 InnactiveLine = {0.f, 0.f, 0.f, 1.f};
 
         constexpr glm::vec4 Node = {.85f, .95f, .9f, 1.f};
         constexpr glm::vec4 NodeSelected = {.5f, .7f, .8f, 1.f};
@@ -31,6 +32,11 @@ namespace Style {
         constexpr glm::vec4 NodeGoodSelected = {.35f, 1.f, .35f, 1.f};
         constexpr glm::vec4 NodeGoal = {.3f, .3f, 1.f, 1.f};
         constexpr glm::vec4 NodeGoalSelected = {.4f, .4f, 1.f, 1.f};
+
+        constexpr glm::vec4 NodeSwitch = {.95f, .65f, .2f, 1.f};
+        constexpr glm::vec4 NodeSwitchSelected = {1.f, .7f, .4f, 1.f};
+
+        constexpr glm::vec4 NodeSelectedOutline = {.95f, .6f, 0.1f, 1.f};
         // Add daltonic mode, baubau Can't tell between Node and Selected Node
     }
 
@@ -55,7 +61,7 @@ namespace Style {
         constexpr float TextSize = 16.f;
     }
 
-    constexpr int OutlineWidth = 1;
+    constexpr int OutlineWidth = 3;
     constexpr int NodeSize = 15;
     constexpr int NodeSelectedPadding = 2;
     constexpr int LineWidth = 10;
